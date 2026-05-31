@@ -54,6 +54,7 @@ const addNodeToGroup = (group: QueryGroup, parentId: string, node: QueryNode): Q
 const reorderInGroup = (group: QueryGroup, parentId: string, oldIndex: number, newIndex: number): QueryGroup => {
   if (group.id === parentId) {
     const children = [...group.children]
+    if (oldIndex < 0 || oldIndex >= children.length || newIndex < 0 || newIndex >= children.length) return group
     const [moved] = children.splice(oldIndex, 1)
     children.splice(newIndex, 0, moved)
     return { ...group, children }

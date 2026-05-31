@@ -39,7 +39,13 @@ const evaluateRule = (rule: QueryRule, record: Record<string, unknown>): boolean
     case 'less_than_or_equal':
       return Number(recordValue) <= Number(value)
     case 'between': {
-      const [a, b] = value as [number, number]
+      const [a, b] = value as [unknown, unknown]
+      const recDate = new Date(String(recordValue)).getTime()
+      const aDate = new Date(String(a)).getTime()
+      const bDate = new Date(String(b)).getTime()
+      if (!isNaN(recDate) && !isNaN(aDate) && !isNaN(bDate)) {
+        return recDate >= aDate && recDate <= bDate
+      }
       const num = Number(recordValue)
       return num >= Number(a) && num <= Number(b)
     }
@@ -48,11 +54,13 @@ const evaluateRule = (rule: QueryRule, record: Record<string, unknown>): boolean
     case 'after':
       return new Date(String(recordValue)) > new Date(String(value))
     case 'in_array':
-      return (value as string[]).map(v => v.toLowerCase()).includes(String(recordValue).toLowerCase())
+      if (!Array.isArray(value)) return false
+      return (value as unknown[]).map(v => String(v).toLowerCase()).includes(String(recordValue).toLowerCase())
     case 'not_in_array':
-      return !(value as string[]).map(v => v.toLowerCase()).includes(String(recordValue).toLowerCase())
+      if (!Array.isArray(value)) return true
+      return !(value as unknown[]).map(v => String(v).toLowerCase()).includes(String(recordValue).toLowerCase())
     default:
-      return true
+      return false
   }
 }
 
@@ -67,9 +75,6 @@ const evaluateGroup = (group: QueryGroup, record: Record<string, unknown>): bool
   return group.children.some(child => evaluateNode(child, record))
 }
 
-export const executeQuery = (
-  root: QueryGroup,
-  dataset: object[]
-): Record<string, unknown>[] => {
+export const executeQuery = (root: QueryGroup, dataset: object[]): Record<string, unknown>[] => {
   return (dataset as Record<string, unknown>[]).filter(record => evaluateGroup(root, record))
 }
