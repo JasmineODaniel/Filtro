@@ -35,38 +35,43 @@ export default function QueryBuilder() {
         <Toolbar />
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          <div
+          <main
+            className="dot-grid"
+            aria-label="Query builder canvas"
             style={{
               flex: 1,
               overflowY: 'auto',
-              padding: '32px',
+              padding: 'var(--space-8)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '16px',
+              gap: 'var(--space-4)',
               backgroundColor: 'var(--bg)',
             }}
           >
-            <div style={{ marginBottom: '8px' }}>
+            <header style={{ marginBottom: 'var(--space-1)' }}>
               <h1
                 style={{
-                  fontSize: '18px',
-                  fontWeight: 600,
+                  fontSize: '20px',
+                  fontWeight: 700,
                   color: 'var(--text-primary)',
-                  fontFamily: 'var(--font-sans)',
-                  marginBottom: '4px',
+                  letterSpacing: '-0.03em',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 Query Builder
               </h1>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                 Build complex filters visually — no code required
               </p>
+            </header>
+
+            <div style={{ animation: 'fadeIn 0.2s ease' }}>
+              <QueryGroupComponent group={tree.root} depth={0} isRoot />
             </div>
+          </main>
 
-            <QueryGroupComponent group={tree.root} depth={0} isRoot />
-          </div>
-
-          <div
+          <aside
+            aria-label="Query preview and results"
             style={{
               width: '360px',
               borderLeft: '1px solid var(--border)',
@@ -75,11 +80,12 @@ export default function QueryBuilder() {
               overflow: 'hidden',
               backgroundColor: 'var(--surface)',
               flexShrink: 0,
+              boxShadow: '-2px 0 8px rgba(0,0,0,0.04)',
             }}
           >
             <QueryPreview />
             <ResultsPanel />
-          </div>
+          </aside>
         </div>
       </div>
     </div>
