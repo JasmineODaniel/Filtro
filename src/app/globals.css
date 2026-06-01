@@ -2,14 +2,14 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f5f5f0;
-  --bg-secondary: #eeeeea;
-  --bg-tertiary: #e5e5e1;
+  --bg: #f0f0eb;
+  --bg-secondary: #e8e8e3;
+  --bg-tertiary: #e0e0db;
   --surface: #ffffff;
   --surface-raised: #fafafa;
-  --border: #e2e2e2;
+  --border: #e2e2dd;
   --border-strong: #111111;
-  --border-subtle: #d8d8d4;
+  --border-subtle: #ebebeb;
   --text-primary: #111111;
   --text-secondary: #555555;
   --text-muted: #999999;
@@ -18,15 +18,27 @@
   --accent-text: #111111;
   --destructive: #ff4444;
   --destructive-bg: rgba(255, 68, 68, 0.08);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
   --depth-1: #111111;
   --depth-2: #3b82f6;
   --depth-3: #a855f7;
   --depth-4: #f97316;
   --syntax-keyword: #0070f3;
-  --syntax-field: #111111;
   --syntax-value: #16a34a;
   --syntax-operator: #9333ea;
-  --radius: 5px;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
 }
@@ -35,25 +47,27 @@
   --bg: #141414;
   --bg-secondary: #1c1c1c;
   --bg-tertiary: #242424;
-  --surface: #1c1c1c;
-  --surface-raised: #242424;
+  --surface: #1e1e1e;
+  --surface-raised: #262626;
   --border: #2e2e2e;
   --border-strong: #c8ff00;
-  --border-subtle: #2e2e2e;
+  --border-subtle: #2a2a2a;
   --text-primary: #f0f0f0;
   --text-secondary: #a0a0a0;
-  --text-muted: #606060;
+  --text-muted: #555555;
   --accent: #c8ff00;
   --accent-hover: #b8ef00;
   --accent-text: #111111;
   --destructive: #ff4444;
   --destructive-bg: rgba(255, 68, 68, 0.08);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
   --depth-1: #c8ff00;
   --depth-2: #3b82f6;
   --depth-3: #a855f7;
   --depth-4: #f97316;
   --syntax-keyword: #c8ff00;
-  --syntax-field: #60a5fa;
   --syntax-value: #4ade80;
   --syntax-operator: #e879f9;
 }
@@ -75,6 +89,16 @@ body {
   background-color: var(--bg);
   color: var(--text-primary);
   min-height: 100vh;
+}
+
+.dot-grid {
+  background-image: radial-gradient(circle, #c8c8c3 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.dark .dot-grid {
+  background-image: radial-gradient(circle, #2a2a2a 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 ::-webkit-scrollbar {
@@ -99,12 +123,29 @@ code, pre, .mono {
   font-family: var(--font-mono);
 }
 
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(200, 255, 0, 0.12);
+}
+
 input[type="date"]::-webkit-calendar-picker-indicator {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: pointer;
 }
 
-input:focus, select:focus {
-  outline: none;
-  border-color: var(--accent) !important;
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
 }
