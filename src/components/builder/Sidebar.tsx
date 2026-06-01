@@ -5,8 +5,58 @@ import { useQueryStore } from '@/store'
 import { History, BookmarkCheck, Sun, Moon, Filter } from 'lucide-react'
 import HistoryPanel from './HistoryPanel'
 import PresetsPanel from './PresetsPanel'
+import { Button } from '@/components/ui/Button'
 
 type Panel = 'history' | 'presets' | null
+
+interface NavItemProps {
+  icon: React.ReactNode
+  label: string
+  active: boolean
+  onClick: () => void
+}
+
+function NavItem({ icon, label, active, onClick }: NavItemProps) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      aria-label={label}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--space-3)',
+        padding: 'var(--space-2) var(--space-3)',
+        borderRadius: 'var(--radius)',
+        border: 'none',
+        backgroundColor: active ? 'var(--accent)' : 'transparent',
+        color: active ? 'var(--accent-text)' : 'var(--text-secondary)',
+        fontSize: '13px',
+        fontWeight: active ? 600 : 400,
+        fontFamily: 'var(--font-sans)',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
+        textAlign: 'left',
+        width: '100%',
+      }}
+      onMouseEnter={e => {
+        if (!active) {
+          e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
+          e.currentTarget.style.color = 'var(--text-primary)'
+        }
+      }}
+      onMouseLeave={e => {
+        if (!active) {
+          e.currentTarget.style.backgroundColor = 'transparent'
+          e.currentTarget.style.color = 'var(--text-secondary)'
+        }
+      }}
+    >
+      {icon}
+      {label}
+    </button>
+  )
+}
 
 export default function Sidebar() {
   const { toggleTheme, theme } = useQueryStore()
@@ -20,102 +70,117 @@ export default function Sidebar() {
     <div style={{ display: 'flex', flexShrink: 0 }}>
       <div
         style={{
-          width: '56px',
+          width: '220px',
           borderRight: '1px solid var(--border)',
           backgroundColor: 'var(--surface)',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          paddingTop: '12px',
-          paddingBottom: '16px',
-          gap: '4px',
           flexShrink: 0,
+          boxShadow: 'var(--shadow)',
         }}
       >
         <div
           style={{
-            width: '32px',
-            height: '32px',
-            backgroundColor: 'var(--accent)',
-            borderRadius: 'var(--radius)',
+            padding: 'var(--space-5) var(--space-4) var(--space-4)',
+            borderBottom: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '20px',
-            flexShrink: 0,
+            gap: 'var(--space-3)',
           }}
         >
-          <Filter size={16} color="var(--accent-text)" strokeWidth={2.5} />
-        </div>
-
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', alignItems: 'center' }}>
-          {[
-            { id: 'history' as Panel, icon: <History size={16} />, label: 'History' },
-            { id: 'presets' as Panel, icon: <BookmarkCheck size={16} />, label: 'Presets' },
-          ].map(item => (
-            <button
-              key={item.id}
-              title={item.label}
-              onClick={() => togglePanel(item.id)}
+          <div
+            aria-hidden="true"
+            style={{
+              width: '32px',
+              height: '32px',
+              backgroundColor: 'var(--accent)',
+              borderRadius: 'var(--radius)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <Filter size={16} color="var(--accent-text)" strokeWidth={2.5} />
+          </div>
+          <div>
+            <div
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: 'var(--radius)',
-                border: 'none',
-                backgroundColor: activePanel === item.id ? 'var(--accent)' : 'transparent',
-                color: activePanel === item.id ? 'var(--accent-text)' : 'var(--text-muted)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                flexShrink: 0,
-              }}
-              onMouseEnter={e => {
-                if (activePanel !== item.id) {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
-                  e.currentTarget.style.color = 'var(--text-primary)'
-                }
-              }}
-              onMouseLeave={e => {
-                if (activePanel !== item.id) {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = 'var(--text-muted)'
-                }
+                fontSize: '15px',
+                fontWeight: 700,
+                color: 'var(--text-primary)',
+                letterSpacing: '-0.02em',
               }}
             >
-              {item.icon}
-            </button>
-          ))}
+              Filtro
+            </div>
+            <div
+              style={{
+                fontSize: '10px',
+                color: 'var(--text-muted)',
+                fontFamily: 'var(--font-mono)',
+              }}
+            >
+              query builder
+            </div>
+          </div>
         </div>
 
-        <button
-          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          onClick={toggleTheme}
+        <nav
+          aria-label="Sidebar navigation"
           style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: 'var(--radius)',
-            border: 'none',
-            backgroundColor: 'transparent',
-            color: 'var(--text-muted)',
+            flex: 1,
+            padding: 'var(--space-3) var(--space-2)',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
-            e.currentTarget.style.color = 'var(--text-primary)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = 'var(--text-muted)'
+            flexDirection: 'column',
+            gap: 'var(--space-1)',
           }}
         >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
+          <NavItem
+            icon={<History size={15} />}
+            label="Query History"
+            active={activePanel === 'history'}
+            onClick={() => togglePanel('history')}
+          />
+          <NavItem
+            icon={<BookmarkCheck size={15} />}
+            label="Saved Presets"
+            active={activePanel === 'presets'}
+            onClick={() => togglePanel('presets')}
+          />
+        </nav>
+
+        <div
+          style={{
+            padding: 'var(--space-3) var(--space-2)',
+            borderTop: '1px solid var(--border)',
+          }}
+        >
+          <Button
+            variant="ghost"
+            size="md"
+            label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            onClick={toggleTheme}
+            style={{
+              width: '100%',
+              justifyContent: 'flex-start',
+              gap: 'var(--space-3)',
+              color: 'var(--text-secondary)',
+              padding: 'var(--space-2) var(--space-3)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
+              e.currentTarget.style.color = 'var(--text-primary)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+              e.currentTarget.style.color = 'var(--text-secondary)'
+            }}
+          >
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          </Button>
+        </div>
       </div>
 
       {activePanel && (
@@ -129,6 +194,8 @@ export default function Sidebar() {
             overflow: 'hidden',
             animation: 'slideIn 0.15s ease',
           }}
+          role="complementary"
+          aria-label={activePanel === 'history' ? 'Query history panel' : 'Saved presets panel'}
         >
           {activePanel === 'history' && <HistoryPanel />}
           {activePanel === 'presets' && <PresetsPanel />}
@@ -136,4 +203,4 @@ export default function Sidebar() {
       )}
     </div>
   )
-}
+}                                                                     
