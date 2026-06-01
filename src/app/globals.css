@@ -1,26 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f5f5f0;
+  --bg-secondary: #eeeeea;
+  --bg-tertiary: #e5e5e1;
+  --surface: #ffffff;
+  --surface-raised: #fafafa;
+  --border: #e2e2e2;
+  --border-strong: #111111;
+  --border-subtle: #d8d8d4;
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --text-muted: #999999;
+  --accent: #c8ff00;
+  --accent-hover: #b8ef00;
+  --accent-text: #111111;
+  --destructive: #ff4444;
+  --destructive-bg: rgba(255, 68, 68, 0.08);
+  --depth-1: #111111;
+  --depth-2: #3b82f6;
+  --depth-3: #a855f7;
+  --depth-4: #f97316;
+  --syntax-keyword: #0070f3;
+  --syntax-field: #111111;
+  --syntax-value: #16a34a;
+  --syntax-operator: #9333ea;
+  --radius: 5px;
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  --bg: #141414;
+  --bg-secondary: #1c1c1c;
+  --bg-tertiary: #242424;
+  --surface: #1c1c1c;
+  --surface-raised: #242424;
+  --border: #2e2e2e;
+  --border-strong: #c8ff00;
+  --border-subtle: #2e2e2e;
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0a0;
+  --text-muted: #606060;
+  --accent: #c8ff00;
+  --accent-hover: #b8ef00;
+  --accent-text: #111111;
+  --destructive: #ff4444;
+  --destructive-bg: rgba(255, 68, 68, 0.08);
+  --depth-1: #c8ff00;
+  --depth-2: #3b82f6;
+  --depth-3: #a855f7;
+  --depth-4: #f97316;
+  --syntax-keyword: #c8ff00;
+  --syntax-field: #60a5fa;
+  --syntax-value: #4ade80;
+  --syntax-operator: #e879f9;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--accent) !important;
 }
