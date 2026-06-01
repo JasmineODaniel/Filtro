@@ -5,6 +5,9 @@ import { useQueryStore } from '@/store'
 import { QueryGroup as QueryGroupType, QueryNode } from '@/types'
 import { ChevronDown, ChevronRight, Plus, FolderPlus, Trash2 } from 'lucide-react'
 import QueryRuleComponent from './QueryRule'
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardBody } from '@/components/ui/Card'
+import { ConnectorLine } from '@/components/ui/ConnectorLine'
 import {
   DndContext,
   closestCenter,
@@ -26,7 +29,7 @@ interface Props {
   isRoot?: boolean
 }
 
-const DEPTH_COLORS = ['#111111', '#3b82f6', '#a855f7', '#f97316']
+const DEPTH_COLORS_LIGHT = ['#111111', '#3b82f6', '#a855f7', '#f97316']
 const DEPTH_COLORS_DARK = ['#c8ff00', '#3b82f6', '#a855f7', '#f97316']
 
 function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
@@ -42,8 +45,9 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
   } = useQueryStore()
 
   const error = validationErrors.find(e => e.nodeId === group.id)
-  const depthColors = theme === 'dark' ? DEPTH_COLORS_DARK : DEPTH_COLORS
+  const depthColors = theme === 'dark' ? DEPTH_COLORS_DARK : DEPTH_COLORS_LIGHT
   const depthColor = depthColors[depth % depthColors.length]
+  const errorId = `error-${group.id}`
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -53,63 +57,39 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
-    const oldIndex = group.children.findIndex(c => c.id === active.id)
-    const newIndex = group.children.findIndex(c => c.id === over.id)
-    if (oldIndex !== -1 && newIndex !== -1) {
-      reorderNodes(group.id, oldIndex, newIndex)
-    }
+    const oldIndex = group.children.findIndex((c: QueryNode) => c.id === active.id)
+    const newIndex = group.children.findIndex((c: QueryNode) => c.id === over.id)
+    if (oldIndex !== -1 && newIndex !== -1) reorderNodes(group.id, oldIndex, newIndex)
   }, [group.children, group.id, reorderNodes])
 
   return (
     <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-      }}
+      style={{ display: 'flex', flexDirection: 'column', gap: '0', animation: 'slideDown 0.2s ease' }}
+      role="group"
+      aria-label={`Condition group with ${group.operator} logic`}
     >
-      <div
-        style={{
-          backgroundColor: 'var(--surface)',
-          border: `1px solid ${error ? 'var(--destructive)' : 'var(--border)'}`,
-          borderRadius: 'var(--radius)',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            padding: '10px 14px',
-            borderBottom: group.collapsed ? 'none' : `1px solid var(--border)`,
-            backgroundColor: 'var(--bg-secondary)',
-          }}
-        >
-          <button
+      <Card error={!!error}>
+        <CardHeader>
+          <Button
+            variant="icon"
+            size="sm"
+            label={group.collapsed ? 'Expand group' : 'Collapse group'}
             onClick={() => toggleGroupCollapsed(group.id)}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               width: '20px',
               height: '20px',
-              borderRadius: 'var(--radius)',
               border: '1px solid var(--border)',
               backgroundColor: 'var(--surface)',
               color: 'var(--text-muted)',
-              cursor: 'pointer',
+              borderRadius: 'var(--radius-sm)',
               flexShrink: 0,
-              padding: 0,
             }}
           >
-            {group.collapsed
-              ? <ChevronRight size={11} />
-              : <ChevronDown size={11} />
-            }
-          </button>
+            {group.collapsed ? <ChevronRight size={11} /> : <ChevronDown size={11} />}
+          </Button>
 
           <div
+            aria-hidden="true"
             style={{
               width: '3px',
               height: '16px',
@@ -119,10 +99,15 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
             }}
           />
 
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+            {group.operator === 'AND' ? 'All conditions must match' : 'Any condition must match'}
+          </span>
+
           <button
             onClick={() => toggleGroupOperator(group.id)}
+            aria-label={`Toggle group operator. Currently ${group.operator}`}
             style={{
-              padding: '3px 12px',
+              padding: '2px var(--space-2)',
               borderRadius: '20px',
               border: `1.5px solid ${depthColor}`,
               backgroundColor: 'var(--accent)',
@@ -131,7 +116,7 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
               fontWeight: 700,
               fontFamily: 'var(--font-sans)',
               cursor: 'pointer',
-              letterSpacing: '0.08em',
+              letterSpacing: '0.06em',
               transition: 'all 0.15s ease',
               flexShrink: 0,
             }}
@@ -139,35 +124,22 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
             {group.operator}
           </button>
 
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-            {group.children.length} condition{group.children.length !== 1 ? 's' : ''}
-          </span>
-
           {error && (
-            <span style={{ fontSize: '11px', color: 'var(--destructive)' }}>
+            <span
+              id={errorId}
+              role="alert"
+              style={{ fontSize: '11px', color: 'var(--destructive)' }}
+            >
               {error.message}
             </span>
           )}
 
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <button
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <Button
+              variant="primary"
+              size="sm"
+              label="Add rule to group"
               onClick={() => addRule(group.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '4px 10px',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--border)',
-                backgroundColor: 'var(--surface)',
-                color: 'var(--text-secondary)',
-                fontSize: '11px',
-                fontWeight: 500,
-                fontFamily: 'var(--font-sans)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                whiteSpace: 'nowrap',
-              }}
               onMouseEnter={e => {
                 e.currentTarget.style.backgroundColor = 'var(--accent)'
                 e.currentTarget.style.color = 'var(--accent-text)'
@@ -179,28 +151,14 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
                 e.currentTarget.style.borderColor = 'var(--border)'
               }}
             >
-              <Plus size={11} />
-              Add Rule
-            </button>
+              <Plus size={11} /> Add Rule
+            </Button>
 
-            <button
+            <Button
+              variant="primary"
+              size="sm"
+              label="Add nested group"
               onClick={() => addGroup(group.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '4px 10px',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--border)',
-                backgroundColor: 'var(--surface)',
-                color: 'var(--text-secondary)',
-                fontSize: '11px',
-                fontWeight: 500,
-                fontFamily: 'var(--font-sans)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-                whiteSpace: 'nowrap',
-              }}
               onMouseEnter={e => {
                 e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
                 e.currentTarget.style.borderColor = 'var(--border-strong)'
@@ -210,29 +168,18 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
                 e.currentTarget.style.borderColor = 'var(--border)'
               }}
             >
-              <FolderPlus size={11} />
-              Add Group
-            </button>
+              <FolderPlus size={11} /> Add Group
+            </Button>
 
             {!isRoot && (
-              <button
+              <Button
+                variant="danger"
+                size="sm"
+                label="Delete group"
                 onClick={() => removeNode(group.id)}
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: 'var(--radius)',
-                  border: '1px solid transparent',
-                  backgroundColor: 'transparent',
-                  color: 'var(--text-muted)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
                 onMouseEnter={e => {
                   e.currentTarget.style.color = 'var(--destructive)'
-                  e.currentTarget.style.backgroundColor = 'rgba(255,68,68,0.08)'
+                  e.currentTarget.style.backgroundColor = 'var(--destructive-bg)'
                   e.currentTarget.style.borderColor = 'var(--destructive)'
                 }}
                 onMouseLeave={e => {
@@ -242,40 +189,53 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
                 }}
               >
                 <Trash2 size={12} />
-              </button>
+              </Button>
             )}
           </div>
-        </div>
+        </CardHeader>
 
         {!group.collapsed && (
-          <div style={{ padding: '12px' }}>
+          <CardBody>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={group.children.map(c => c.id)}
+                items={group.children.map((c: QueryNode) => c.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {group.children.map((child: QueryNode) =>
-                    child.type === 'rule' ? (
-                      <QueryRuleComponent key={child.id} rule={child} />
-                    ) : (
-                      <QueryGroupComponent
-                        key={child.id}
-                        group={child}
-                        depth={depth + 1}
-                      />
-                    )
-                  )}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  {group.children.map((child: QueryNode, index: number) => (
+                    <div key={child.id}>
+                      {index > 0 && (
+                        <ConnectorLine
+                          operator={group.operator}
+                          depthColor={depthColor}
+                          onToggle={() => toggleGroupOperator(group.id)}
+                        />
+                      )}
+                      {child.type === 'rule' ? (
+                        <QueryRuleComponent rule={child} />
+                      ) : (
+                        <div
+                          style={{
+                            paddingLeft: 'var(--space-4)',
+                            borderLeft: `2px solid ${depthColor}`,
+                            marginLeft: 'var(--space-3)',
+                          }}
+                        >
+                          <QueryGroupComponent group={child} depth={depth + 1} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </SortableContext>
             </DndContext>
-          </div>
+          </CardBody>
         )}
-      </div>
+      </Card>
     </div>
   )
 }

@@ -4,26 +4,23 @@ import { memo, useMemo, useState } from 'react'
 import { useQueryStore } from '@/store'
 import { executeQuery } from '@/engine'
 import { MOCK_DATA } from '@/schemas/mock-data'
-import { Play, ChevronDown, ChevronUp } from 'lucide-react'
+import { Icon } from '@/components/ui/Icon'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
 
 function ResultsPanel() {
-  const { tree, schema, validationErrors, pushHistory } = useQueryStore()
+  const { tree, schema, pushHistory } = useQueryStore()
   const [isRunning, setIsRunning] = useState(false)
   const [hasRun, setHasRun] = useState(false)
+  const [results, setResults] = useState<Record<string, unknown>[]>([])
   const [sortField, setSortField] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
   const [page, setPage] = useState(1)
   const PAGE_SIZE = 5
 
-  const rawResults = useMemo(() => {
-    if (!hasRun) return []
-    const dataset = MOCK_DATA[schema.id] ?? []
-    return executeQuery(tree.root, dataset)
-  }, [tree, schema, hasRun])
-
-  const results = useMemo(() => {
-    if (!sortField) return rawResults
-    return [...rawResults].sort((a, b) => {
+  const sorted = useMemo(() => {
+    if (!sortField) return results
+    return [...results].sort((a, b) => {
       const aVal = a[sortField]
       const bVal = b[sortField]
       if (aVal === undefined || bVal === undefined) return 0
@@ -34,18 +31,19 @@ function ResultsPanel() {
         ? String(aVal).localeCompare(String(bVal))
         : String(bVal).localeCompare(String(aVal))
     })
-  }, [rawResults, sortField, sortDir])
+  }, [results, sortField, sortDir])
 
-  const totalPages = Math.ceil(results.length / PAGE_SIZE)
-  const paginated = results.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE)
+  const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
   const columns = schema.fields.map(f => f.name)
-  const hasErrors = validationErrors.length > 0
 
   const handleRun = () => {
-    if (hasErrors) return
     setIsRunning(true)
     pushHistory()
     setTimeout(() => {
+      const dataset = MOCK_DATA[schema.id] ?? []
+      const matched = executeQuery(tree.root, dataset)
+      setResults(matched)
       setHasRun(true)
       setIsRunning(false)
       setPage(1)
@@ -68,13 +66,13 @@ function ResultsPanel() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '10px 14px',
+          padding: 'var(--space-3) var(--space-4)',
           borderBottom: '1px solid var(--border)',
           backgroundColor: 'var(--surface)',
           flexShrink: 0,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           <span style={{
             fontSize: '10px',
             fontWeight: 600,
@@ -86,100 +84,71 @@ function ResultsPanel() {
             Results
           </span>
           {hasRun && (
-            <span
-              style={{
-                fontSize: '10px',
-                fontWeight: 700,
-                padding: '1px 7px',
-                borderRadius: '20px',
-                backgroundColor: results.length > 0 ? 'var(--accent)' : 'var(--bg-tertiary)',
-                color: results.length > 0 ? 'var(--accent-text)' : 'var(--text-muted)',
-                fontFamily: 'var(--font-sans)',
-              }}
-            >
+            <Badge variant={results.length > 0 ? 'accent' : 'muted'} pill>
               {results.length}
-            </span>
+            </Badge>
           )}
         </div>
 
-        <button
+        <Button
+          variant="accent"
+          size="sm"
+          label="Execute query"
           onClick={handleRun}
-          disabled={isRunning || hasErrors}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            padding: '5px 12px',
-            borderRadius: 'var(--radius)',
-            border: '1px solid var(--accent)',
-            backgroundColor: hasErrors ? 'var(--bg-tertiary)' : 'var(--accent)',
-            color: hasErrors ? 'var(--text-muted)' : 'var(--accent-text)',
-            fontSize: '11px',
-            fontWeight: 700,
-            fontFamily: 'var(--font-sans)',
-            cursor: hasErrors ? 'not-allowed' : 'pointer',
-            transition: 'all 0.15s ease',
-            opacity: isRunning ? 0.7 : 1,
-          }}
+          disabled={isRunning}
         >
-          <Play size={11} />
+          <Icon name="play" size={11} />
           {isRunning ? 'Running...' : 'Execute'}
-        </button>
+        </Button>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', backgroundColor: 'var(--bg)' }}>
         {!hasRun && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              color: 'var(--text-muted)',
-              fontSize: '12px',
-              flexDirection: 'column',
-              gap: '10px',
-              padding: '24px',
-              textAlign: 'center',
-            }}
-          >
-            <Play size={28} strokeWidth={1} color="var(--text-muted)" />
-            <span style={{ fontFamily: 'var(--font-sans)', lineHeight: 1.5 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            color: 'var(--text-muted)',
+            flexDirection: 'column',
+            gap: 'var(--space-3)',
+            padding: 'var(--space-6)',
+            textAlign: 'center',
+          }}>
+            <Icon name="play" size={28} strokeWidth={1} />
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', lineHeight: 1.5 }}>
               Click Execute to run your<br />query against the mock dataset
             </span>
           </div>
         )}
 
         {hasRun && results.length === 0 && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              color: 'var(--text-muted)',
-              fontSize: '12px',
-              flexDirection: 'column',
-              gap: '10px',
-              padding: '24px',
-              textAlign: 'center',
-            }}
-          >
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            color: 'var(--text-muted)',
+            flexDirection: 'column',
+            gap: 'var(--space-3)',
+            padding: 'var(--space-6)',
+            textAlign: 'center',
+          }}>
             <span style={{ fontSize: '28px' }}>∅</span>
-            <span style={{ fontFamily: 'var(--font-sans)' }}>No records matched your query</span>
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px' }}>
+              No records matched your query
+            </span>
           </div>
         )}
 
         {hasRun && results.length > 0 && (
           <div style={{ overflowX: 'auto' }}>
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                fontSize: '11px',
-                fontFamily: 'var(--font-sans)',
-              }}
-            >
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '11px',
+              fontFamily: 'var(--font-sans)',
+            }}>
               <thead>
                 <tr style={{ backgroundColor: '#111111' }}>
                   {columns.map(col => (
@@ -187,7 +156,7 @@ function ResultsPanel() {
                       key={col}
                       onClick={() => handleSort(col)}
                       style={{
-                        padding: '8px 12px',
+                        padding: 'var(--space-2) var(--space-3)',
                         textAlign: 'left',
                         fontSize: '10px',
                         fontWeight: 600,
@@ -199,10 +168,13 @@ function ResultsPanel() {
                         userSelect: 'none',
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                         {col}
                         {sortField === col && (
-                          sortDir === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />
+                          <Icon
+                            name={sortDir === 'asc' ? 'chevronDown' : 'chevronRight'}
+                            size={10}
+                          />
                         )}
                       </div>
                     </th>
@@ -213,10 +185,7 @@ function ResultsPanel() {
                 {paginated.map((row, i) => (
                   <tr
                     key={i}
-                    style={{
-                      backgroundColor: i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)',
-                      transition: 'background 0.1s ease',
-                    }}
+                    style={{ backgroundColor: i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)' }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)'}
                   >
@@ -228,7 +197,7 @@ function ResultsPanel() {
                         <td
                           key={col}
                           style={{
-                            padding: '7px 12px',
+                            padding: 'var(--space-2) var(--space-3)',
                             borderBottom: '1px solid var(--border)',
                             color: 'var(--text-primary)',
                             whiteSpace: 'nowrap',
@@ -238,27 +207,13 @@ function ResultsPanel() {
                           }}
                         >
                           {isBoolean ? (
-                            <span style={{
-                              padding: '2px 7px',
-                              borderRadius: '20px',
-                              backgroundColor: val ? 'rgba(200,255,0,0.15)' : 'var(--bg-tertiary)',
-                              color: val ? 'var(--accent)' : 'var(--text-muted)',
-                              fontSize: '10px',
-                              fontWeight: 600,
-                            }}>
+                            <Badge variant={val ? 'accent' : 'muted'} pill>
                               {String(val)}
-                            </span>
+                            </Badge>
                           ) : isStatus ? (
-                            <span style={{
-                              padding: '2px 7px',
-                              borderRadius: '20px',
-                              backgroundColor: 'var(--bg-tertiary)',
-                              color: 'var(--text-secondary)',
-                              fontSize: '10px',
-                              fontWeight: 500,
-                            }}>
+                            <Badge variant="depth" pill>
                               {String(val)}
-                            </span>
+                            </Badge>
                           ) : (
                             String(val ?? '—')
                           )}
@@ -274,55 +229,37 @@ function ResultsPanel() {
       </div>
 
       {hasRun && totalPages > 1 && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '8px 14px',
-            borderTop: '1px solid var(--border)',
-            backgroundColor: 'var(--surface)',
-            flexShrink: 0,
-          }}
-        >
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 'var(--space-2) var(--space-4)',
+          borderTop: '1px solid var(--border)',
+          backgroundColor: 'var(--surface)',
+          flexShrink: 0,
+        }}>
           <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-            {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, results.length)} of {results.length}
+            {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, sorted.length)} of {sorted.length}
           </span>
-          <div style={{ display: 'flex', gap: '6px' }}>
-            <button
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Button
+              variant="primary"
+              size="sm"
+              label="Previous page"
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              style={{
-                padding: '3px 10px',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--border)',
-                backgroundColor: 'transparent',
-                color: page === 1 ? 'var(--text-muted)' : 'var(--text-primary)',
-                fontSize: '11px',
-                fontFamily: 'var(--font-sans)',
-                cursor: page === 1 ? 'not-allowed' : 'pointer',
-                transition: 'all 0.15s ease',
-              }}
             >
               Prev
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              label="Next page"
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              style={{
-                padding: '3px 10px',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--border)',
-                backgroundColor: 'transparent',
-                color: page === totalPages ? 'var(--text-muted)' : 'var(--text-primary)',
-                fontSize: '11px',
-                fontFamily: 'var(--font-sans)',
-                cursor: page === totalPages ? 'not-allowed' : 'pointer',
-                transition: 'all 0.15s ease',
-              }}
             >
               Next
-            </button>
+            </Button>
           </div>
         </div>
       )}
