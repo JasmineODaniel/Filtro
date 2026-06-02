@@ -2,8 +2,8 @@
 
 import { useRef, useCallback } from 'react'
 import { useQueryStore } from '@/store'
-import { QueryTree } from '@/types'
 import { ALL_SCHEMAS } from '@/types/schema'
+import { validateImportedTree, MAX_IMPORT_FILE_SIZE } from '@/utils/sanitize'
 import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
 
@@ -30,11 +30,19 @@ export default function Toolbar() {
   const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (file.size > MAX_IMPORT_FILE_SIZE) {
+      alert('File is too large. Maximum allowed size is 512 KB.')
+      e.target.value = ''
+      return
+    }
     const reader = new FileReader()
     reader.onload = event => {
       try {
-        const parsed = JSON.parse(event.target?.result as string) as QueryTree
-        if (!parsed.root || parsed.root.type !== 'group') return
+        const parsed: unknown = JSON.parse(event.target?.result as string)
+        if (!validateImportedTree(parsed)) {
+          alert('Invalid or malformed query JSON. The file may contain unsupported operators, excessive nesting, or a corrupt structure.')
+          return
+        }
         importTree(parsed)
       } catch {
         alert('Invalid query JSON file')
