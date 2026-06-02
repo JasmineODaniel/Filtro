@@ -10,7 +10,7 @@ import { Icon } from '@/components/ui/Icon'
 import { Check } from 'lucide-react'
 
 export default function Toolbar() {
-  const { schema, setSchema, resetTree, validateQuery, pushHistory, savePreset, importTree, tree } = useQueryStore()
+  const { schema, setSchema, resetTree, savePreset, importTree, tree } = useQueryStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [presetName, setPresetName] = useState('')
@@ -57,11 +57,6 @@ export default function Toolbar() {
     reader.readAsText(file)
     e.target.value = ''
   }, [importTree])
-
-  const handleRun = useCallback(() => {
-    pushHistory()
-    validateQuery()
-  }, [pushHistory, validateQuery])
 
   const handleSaveConfirm = useCallback(() => {
     const name = presetName.trim()
@@ -286,19 +281,6 @@ export default function Toolbar() {
               </>
             )}
           </div>
-
-          <Button
-            variant="accent"
-            size="md"
-            label="Run Query"
-            title="Run Query (Ctrl+Enter)"
-            onClick={handleRun}
-            style={{ width: '32px', padding: 0 }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
-          >
-            <Icon name="play" size={15} />
-          </Button>
 
           <input
             ref={fileInputRef}
