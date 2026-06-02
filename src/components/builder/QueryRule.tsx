@@ -9,7 +9,10 @@ import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/Button'
 import { ChipSelect, ChipInput } from '@/components/ui/Chip'
 import { Icon, IconName } from '@/components/ui/Icon'
+import { AnimatedItem, AnimatedPresenceWrapper } from '@/components/ui/Animated'
 import { useHover } from '@/hooks/useHover'
+import { smooth } from '@/hooks/useAnimation'
+import { motion } from 'framer-motion'
 
 interface Props {
   rule: QueryRuleType
@@ -38,7 +41,6 @@ function QueryRuleComponent({ rule }: Props) {
     transition,
     opacity: isDragging ? 0.4 : 1,
     zIndex: isDragging ? 999 : undefined,
-    animation: 'slideDown 0.2s ease',
   }
 
   const handleFieldChange = useCallback((field: string) => {
@@ -210,119 +212,129 @@ function QueryRuleComponent({ rule }: Props) {
   }
 
   return (
-    <div ref={setNodeRef} style={dragStyle} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--space-2)',
-          padding: 'var(--space-2) var(--space-3)',
-          backgroundColor: hovered ? 'var(--surface-raised)' : 'var(--surface)',
-          border: `1px solid ${error ? 'var(--destructive)' : 'var(--border)'}`,
-          borderRadius: 'var(--radius)',
-          boxShadow: hovered ? 'var(--shadow-md)' : 'var(--shadow)',
-          transition: 'all 0.15s ease',
-          flexWrap: 'wrap',
-        }}
-        role="group"
-        aria-label="Query condition"
-      >
-        <div
-          {...attributes}
-          {...listeners}
-          aria-label="Drag to reorder"
+    <AnimatedItem variant="slideDown" transition={smooth}>
+      <div ref={setNodeRef} style={dragStyle} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+        <motion.div
+          layout
+          transition={smooth}
           style={{
-            color: hovered ? 'var(--text-muted)' : 'transparent',
-            cursor: 'grab',
             display: 'flex',
             alignItems: 'center',
-            flexShrink: 0,
-            transition: 'color 0.15s ease',
+            gap: 'var(--space-2)',
+            padding: 'var(--space-2) var(--space-3)',
+            backgroundColor: hovered ? 'var(--surface-raised)' : 'var(--surface)',
+            border: `1px solid ${error ? 'var(--destructive)' : 'var(--border)'}`,
+            borderRadius: 'var(--radius)',
+            boxShadow: hovered ? 'var(--shadow-md)' : 'var(--shadow)',
+            transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
+            flexWrap: 'wrap',
           }}
+          role="group"
+          aria-label="Query condition"
         >
-          <Icon name="grip" size={14} />
-        </div>
+          <div
+            {...attributes}
+            {...listeners}
+            aria-label="Drag to reorder"
+            style={{
+              color: hovered ? 'var(--text-muted)' : 'transparent',
+              cursor: 'grab',
+              display: 'flex',
+              alignItems: 'center',
+              flexShrink: 0,
+              transition: 'color 0.15s ease',
+            }}
+          >
+            <Icon name="grip" size={14} />
+          </div>
 
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          {selectedField && (
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            {selectedField && (
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  left: 'var(--space-2)',
+                  color: 'var(--text-muted)',
+                  pointerEvents: 'none',
+                  zIndex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <Icon name={FIELD_TYPE_ICONS[selectedField.type]} size={10} />
+              </div>
+            )}
+            <ChipSelect
+              value={rule.field}
+              onChange={e => handleFieldChange(e.target.value)}
+              hasIcon={!!selectedField}
+              aria-label="Select field"
+              error={!!error}
+              style={{ minWidth: '140px' }}
+            >
+              <option value="">Select field...</option>
+              {schema.fields.map(f => <option key={f.name} value={f.name}>{f.label}</option>)}
+            </ChipSelect>
+          </div>
+
+          <ChipSelect
+            value={rule.operator}
+            onChange={e => handleOperatorChange(e.target.value)}
+            disabled={!selectedField}
+            aria-label="Select operator"
+            style={{ minWidth: '130px', opacity: !selectedField ? 0.4 : 1 }}
+          >
+            {operators.map(op => <option key={op} value={op}>{OPERATOR_LABELS[op]}</option>)}
+          </ChipSelect>
+
+          {renderValueInput()}
+
+          <AnimatedPresenceWrapper>
+            {hovered && (
+              <AnimatedItem variant="fadeIn" transition={smooth} style={{ marginLeft: 'auto', flexShrink: 0 }}>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  label="Delete rule"
+                  onClick={() => removeNode(rule.id)}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.color = 'var(--destructive)'
+                    e.currentTarget.style.backgroundColor = 'var(--destructive-bg)'
+                    e.currentTarget.style.borderColor = 'var(--destructive)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.color = 'var(--text-muted)'
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.borderColor = 'transparent'
+                  }}
+                >
+                  <Icon name="trash" size={12} />
+                </Button>
+              </AnimatedItem>
+            )}
+          </AnimatedPresenceWrapper>
+        </motion.div>
+
+        {error && (
+          <AnimatedItem variant="fadeIn" transition={smooth}>
             <div
-              aria-hidden="true"
+              id={errorId}
+              role="alert"
               style={{
-                position: 'absolute',
-                left: 'var(--space-2)',
-                color: 'var(--text-muted)',
-                pointerEvents: 'none',
-                zIndex: 1,
-                display: 'flex',
-                alignItems: 'center',
+                fontSize: '11px',
+                color: 'var(--destructive)',
+                marginTop: 'var(--space-1)',
+                paddingLeft: '34px',
+                fontFamily: 'var(--font-sans)',
               }}
             >
-              <Icon name={FIELD_TYPE_ICONS[selectedField.type]} size={10} />
+              ⚠ {error.message}
             </div>
-          )}
-          <ChipSelect
-            value={rule.field}
-            onChange={e => handleFieldChange(e.target.value)}
-            hasIcon={!!selectedField}
-            aria-label="Select field"
-            error={!!error}
-            style={{ minWidth: '140px' }}
-          >
-            <option value="">Select field...</option>
-            {schema.fields.map(f => <option key={f.name} value={f.name}>{f.label}</option>)}
-          </ChipSelect>
-        </div>
-
-        <ChipSelect
-          value={rule.operator}
-          onChange={e => handleOperatorChange(e.target.value)}
-          disabled={!selectedField}
-          aria-label="Select operator"
-          style={{ minWidth: '130px', opacity: !selectedField ? 0.4 : 1 }}
-        >
-          {operators.map(op => <option key={op} value={op}>{OPERATOR_LABELS[op]}</option>)}
-        </ChipSelect>
-
-        {renderValueInput()}
-
-        <div style={{ marginLeft: 'auto', opacity: hovered ? 1 : 0, transition: 'opacity 0.15s ease', flexShrink: 0 }}>
-          <Button
-            variant="danger"
-            size="sm"
-            label="Delete rule"
-            onClick={() => removeNode(rule.id)}
-            onMouseEnter={e => {
-              e.currentTarget.style.color = 'var(--destructive)'
-              e.currentTarget.style.backgroundColor = 'var(--destructive-bg)'
-              e.currentTarget.style.borderColor = 'var(--destructive)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.color = 'var(--text-muted)'
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.borderColor = 'transparent'
-            }}
-          >
-            <Icon name="trash" size={12} />
-          </Button>
-        </div>
+          </AnimatedItem>
+        )}
       </div>
-
-      {error && (
-        <div
-          id={errorId}
-          role="alert"
-          style={{
-            fontSize: '11px',
-            color: 'var(--destructive)',
-            marginTop: 'var(--space-1)',
-            paddingLeft: '34px',
-            fontFamily: 'var(--font-sans)',
-          }}
-        >
-          ⚠ {error.message}
-        </div>
-      )}
-    </div>
+    </AnimatedItem>
   )
 }
 
