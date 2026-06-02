@@ -1,15 +1,16 @@
 import { QueryGroup, QueryNode, QueryRule, Operator } from '@/types'
+import { escapeSQLString, escapeSQLLike, escapeRegexLiteral, isSafeRegex } from './sanitize'
 
 const formatValue = (value: unknown, operator: Operator): string => {
   if (operator === 'is_empty' || operator === 'is_not_empty') return ''
   if (operator === 'in_array' || operator === 'not_in_array') {
-    return `(${(value as string[]).join(', ')})`
+    return `(${(value as string[]).map(v => `'${escapeSQLString(String(v))}'`).join(', ')})`
   }
   if (operator === 'between') {
     const [a, b] = value as [unknown, unknown]
     return `${a} AND ${b}`
   }
-  if (typeof value === 'string') return `'${value}'`
+  if (typeof value === 'string') return `'${escapeSQLString(value)}'`
   return String(value)
 }
 
@@ -43,13 +44,13 @@ const ruleToSQL = (rule: QueryRule): string => {
     return `${rule.field} ${op}`
   }
   if (rule.operator === 'contains' || rule.operator === 'not_contains') {
-    return `${rule.field} ${op} '%${rule.value}%'`
+    return `${rule.field} ${op} '%${escapeSQLLike(rule.value as string)}%'`
   }
   if (rule.operator === 'starts_with') {
-    return `${rule.field} ${op} '${rule.value}%'`
+    return `${rule.field} ${op} '${escapeSQLLike(rule.value as string)}%'`
   }
   if (rule.operator === 'ends_with') {
-    return `${rule.field} ${op} '%${rule.value}'`
+    return `${rule.field} ${op} '%${escapeSQLLike(rule.value as string)}'`
   }
   return `${rule.field} ${op} ${formatValue(rule.value, rule.operator)}`
 }
@@ -96,11 +97,14 @@ const operatorToMongo = (operator: Operator): string => {
 const ruleToMongo = (rule: QueryRule): object => {
   if (rule.operator === 'is_empty') return { [rule.field]: { $in: [null, ''] } }
   if (rule.operator === 'is_not_empty') return { [rule.field]: { $nin: [null, ''] } }
-  if (rule.operator === 'contains') return { [rule.field]: { $regex: rule.value, $options: 'i' } }
-  if (rule.operator === 'not_contains') return { [rule.field]: { $not: { $regex: rule.value } } }
-  if (rule.operator === 'starts_with') return { [rule.field]: { $regex: `^${rule.value}`, $options: 'i' } }
-  if (rule.operator === 'ends_with') return { [rule.field]: { $regex: `${rule.value}$`, $options: 'i' } }
-  if (rule.operator === 'regex') return { [rule.field]: { $regex: rule.value } }
+  if (rule.operator === 'contains') return { [rule.field]: { $regex: escapeRegexLiteral(rule.value as string), $options: 'i' } }
+  if (rule.operator === 'not_contains') return { [rule.field]: { $not: { $regex: escapeRegexLiteral(rule.value as string) } } }
+  if (rule.operator === 'starts_with') return { [rule.field]: { $regex: `^${escapeRegexLiteral(rule.value as string)}`, $options: 'i' } }
+  if (rule.operator === 'ends_with') return { [rule.field]: { $regex: `${escapeRegexLiteral(rule.value as string)}$`, $options: 'i' } }
+  if (rule.operator === 'regex') {
+    if (!isSafeRegex(rule.value)) return {}
+    return { [rule.field]: { $regex: rule.value } }
+  }
   if (rule.operator === 'between') {
     const [a, b] = rule.value as [unknown, unknown]
     return { [rule.field]: { $gte: a, $lte: b } }
