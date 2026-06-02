@@ -97,7 +97,7 @@ The store also manages: `schema`, `previewMode`, `validationErrors`, `history[]`
 `src/engine/executor.ts` evaluates a `QueryTree` against an array of plain objects. It mirrors the builder's operator set exactly:
 
 - **Groups**: recursively evaluate children, then reduce with `&&` (AND) or `||` (OR)
-- **Rules**: dispatch on `operator` — string ops use `includes`/`startsWith`/`endsWith`/`RegExp`; number ops use arithmetic comparison; date ops compare ISO strings; `between` splits a `value` string on `','`
+- **Rules**: dispatch on `operator` — string ops use `includes`/`startsWith`/`endsWith`/`RegExp`; number ops use arithmetic comparison; date ops use `Date.getTime()` for timestamp comparison; `between` receives a `[a, b]` tuple and checks inclusive range for both numbers and dates
 
 ### Query Generators
 
@@ -106,7 +106,7 @@ The store also manages: `schema`, `previewMode`, `validationErrors`, `history[]`
 | Export | Output format |
 |---|---|
 | `generateSQL` | `WHERE (field = 'val' AND ...)` |
-| `generateMongoDB` | `{ $and: [{ field: { $eq: 'val' } }, ...] }` |
+| `generateMongo` | `{ $and: [{ field: { $eq: 'val' } }, ...] }` |
 | `generateGraphQL` | Prisma-style `where: { AND: [{ field: { equals: "val" } }] }` |
 
 Each is a recursive function over `QueryNode`; base case is a `QueryRule`, recursive case wraps children in the appropriate AND/OR construct.
