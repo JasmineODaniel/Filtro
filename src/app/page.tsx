@@ -22,7 +22,7 @@ const MOCK_RULES = [
   { field: 'plan', op: 'equals', val: 'premium' },
 ]
 
-const CONNECTOR_PATH = 'M 410,20 L 410,115 L 10,115 L 10,210 L 10,315 L 360,315 L 360,420'
+const CONNECTOR_PATH = 'M 410,20 L 410,105 L 10,105 L 10,195 L 10,295 L 360,295 L 360,400'
 
 export default function LandingPage() {
   return (
@@ -117,7 +117,7 @@ export default function LandingPage() {
           </h2>
 
           <div className="lp-steps-grid">
-            <svg className="lp-connector" viewBox="0 0 720 600" preserveAspectRatio="xMidYMid meet">
+            <svg className="lp-connector" viewBox="0 0 720 530" preserveAspectRatio="xMidYMid slice">
               <path d={CONNECTOR_PATH} stroke="var(--bg-tertiary)" strokeWidth="2" fill="none" strokeLinecap="square" strokeLinejoin="miter" />
               <circle r="6" fill="var(--accent)" style={{ filter: 'drop-shadow(0 0 5px var(--accent))' }}>
                 <animateMotion path={CONNECTOR_PATH} dur="3s" repeatCount="indefinite" calcMode="linear" />

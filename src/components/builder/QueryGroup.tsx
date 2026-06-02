@@ -88,7 +88,7 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
             {group.collapsed ? <ChevronRight size={11} /> : <ChevronDown size={11} />}
           </Button>
 
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+          <span style={{ fontSize: '11px', color: 'var(--card-header-text)', fontFamily: 'var(--font-sans)' }}>
             {group.operator === 'AND' ? 'All conditions must match' : 'Any condition must match'}
           </span>
 
