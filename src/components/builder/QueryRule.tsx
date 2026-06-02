@@ -11,6 +11,7 @@ import { ChipSelect, ChipInput } from '@/components/ui/Chip'
 import { Icon, IconName } from '@/components/ui/Icon'
 import { AnimatedItem, AnimatedPresenceWrapper } from '@/components/ui/Animated'
 import { useHover } from '@/hooks/useHover'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { smooth } from '@/hooks/useAnimation'
 import { motion } from 'framer-motion'
 
@@ -29,6 +30,7 @@ const FIELD_TYPE_ICONS: Record<string, IconName> = {
 function QueryRuleComponent({ rule }: Props) {
   const { schema, updateRule, removeNode, validationErrors } = useQueryStore()
   const { hovered, onMouseEnter, onMouseLeave } = useHover()
+  const isMobile = useIsMobile()
   const error = validationErrors.find(e => e.nodeId === rule.id)
   const selectedField = schema.fields.find(f => f.name === rule.field)
   const operators = selectedField ? getOperatorsForType(selectedField.type) : []
@@ -227,28 +229,30 @@ function QueryRuleComponent({ rule }: Props) {
             borderRadius: 'var(--radius)',
             boxShadow: hovered ? 'var(--shadow-md)' : 'var(--shadow)',
             transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
-            flexWrap: 'wrap',
+            flexWrap: isMobile ? 'nowrap' : 'wrap',
           }}
           role="group"
           aria-label="Query condition"
         >
-          <div
-            {...attributes}
-            {...listeners}
-            aria-label="Drag to reorder"
-            style={{
-              color: hovered ? 'var(--text-muted)' : 'transparent',
-              cursor: 'grab',
-              display: 'flex',
-              alignItems: 'center',
-              flexShrink: 0,
-              transition: 'color 0.15s ease',
-            }}
-          >
-            <Icon name="grip" size={14} />
-          </div>
+          {!isMobile && (
+            <div
+              {...attributes}
+              {...listeners}
+              aria-label="Drag to reorder"
+              style={{
+                color: hovered ? 'var(--text-muted)' : 'transparent',
+                cursor: 'grab',
+                display: 'flex',
+                alignItems: 'center',
+                flexShrink: 0,
+                transition: 'color 0.15s ease',
+              }}
+            >
+              <Icon name="grip" size={14} />
+            </div>
+          )}
 
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', flex: isMobile ? 1 : undefined, minWidth: 0 }}>
             {selectedField && (
               <div
                 aria-hidden="true"
@@ -271,9 +275,9 @@ function QueryRuleComponent({ rule }: Props) {
               hasIcon={!!selectedField}
               aria-label="Select field"
               error={!!error}
-              style={{ minWidth: '140px' }}
+              style={isMobile ? { width: '100%', minWidth: 0 } : { minWidth: '140px' }}
             >
-              <option value="">Select field...</option>
+              <option value="">Field...</option>
               {schema.fields.map(f => <option key={f.name} value={f.name}>{f.label}</option>)}
             </ChipSelect>
           </div>
@@ -283,12 +287,17 @@ function QueryRuleComponent({ rule }: Props) {
             onChange={e => handleOperatorChange(e.target.value)}
             disabled={!selectedField}
             aria-label="Select operator"
-            style={{ minWidth: '130px', opacity: !selectedField ? 0.4 : 1 }}
+            style={isMobile
+              ? { flex: 1, minWidth: 0, opacity: !selectedField ? 0.4 : 1 }
+              : { minWidth: '130px', opacity: !selectedField ? 0.4 : 1 }
+            }
           >
             {operators.map(op => <option key={op} value={op}>{OPERATOR_LABELS[op]}</option>)}
           </ChipSelect>
 
-          {renderValueInput()}
+          <div style={{ flex: isMobile ? 1 : undefined, minWidth: 0, display: 'flex' }}>
+            {renderValueInput()}
+          </div>
 
           <AnimatedPresenceWrapper>
             {hovered && (

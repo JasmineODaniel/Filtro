@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useQueryStore } from '@/store'
 import { useIsMobile } from '@/hooks/useIsMobile'
-import { History, BookmarkCheck, Sun, Moon, Filter } from 'lucide-react'
+import { History, BookmarkCheck, Sun, Moon } from 'lucide-react'
+import { FiltroMark } from '@/components/ui/FiltroLogo'
 import HistoryPanel from './HistoryPanel'
 import PresetsPanel from './PresetsPanel'
 import { AnimatedItem, AnimatedPresenceWrapper } from '@/components/ui/Animated'
@@ -93,18 +94,14 @@ export default function Sidebar() {
           <div
             aria-hidden="true"
             style={{
-              width: '36px',
-              height: '36px',
               margin: 'var(--space-3) 0',
-              backgroundColor: 'var(--accent)',
-              borderRadius: 'var(--radius)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
             }}
           >
-            <Filter size={16} color="var(--accent-text)" strokeWidth={2.5} />
+            <FiltroMark size={28} />
           </div>
 
           <nav

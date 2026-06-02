@@ -7,7 +7,8 @@ import { ALL_SCHEMAS } from '@/types/schema'
 import { validateImportedTree, MAX_IMPORT_FILE_SIZE } from '@/utils/sanitize'
 import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
-import { Check, Menu, X, History, BookmarkCheck, Filter, Sun, Moon, ChevronRight } from 'lucide-react'
+import { Check, Menu, X, History, BookmarkCheck, Sun, Moon, ChevronRight } from 'lucide-react'
+import { FiltroLogo } from '@/components/ui/FiltroLogo'
 import HistoryPanel from './HistoryPanel'
 import PresetsPanel from './PresetsPanel'
 
@@ -90,19 +91,59 @@ export default function Toolbar() {
       <header
         role="banner"
         style={{
-          height: '52px',
           borderBottom: '1px solid var(--border)',
           backgroundColor: 'var(--surface)',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: isMobile ? '0 var(--space-3)' : '0 var(--space-5)',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'stretch' : 'center',
+          justifyContent: isMobile ? undefined : 'space-between',
+          padding: isMobile ? '0' : '0 var(--space-5)',
           flexShrink: 0,
           boxShadow: 'var(--shadow)',
           position: 'relative',
           zIndex: 30,
         }}
       >
+        {isMobile && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: '40px',
+            borderBottom: '1px solid var(--border)',
+            padding: '0 var(--space-3)',
+          }}>
+            <FiltroLogo size="sm" description="Visual query builder" />
+            <button
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: 'var(--radius)',
+                border: '1px solid var(--border)',
+                backgroundColor: 'transparent',
+                color: 'var(--text-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
+          </div>
+        )}
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          height: '52px',
+          padding: isMobile ? '0 var(--space-3)' : undefined,
+          width: '100%',
+        }}>
+
         {isMobile ? (
           <button
             onClick={() => setDrawerOpen(true)}
@@ -125,7 +166,7 @@ export default function Toolbar() {
           </button>
         ) : (
           <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em' }}>Filtro</span>
+            <FiltroLogo size="sm" />
             <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Query Builder</span>
             <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
@@ -161,28 +202,6 @@ export default function Toolbar() {
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          {isMobile && (
-            <button
-              onClick={toggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: 'var(--radius)',
-                border: '1px solid var(--border)',
-                backgroundColor: 'transparent',
-                color: 'var(--text-secondary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
-          )}
-
           <Button
             variant="primary"
             size="md"
@@ -341,6 +360,7 @@ export default function Toolbar() {
             onChange={handleImport}
           />
         </div>
+        </div>
       </header>
 
       {isMobile && drawerOpen && (
@@ -397,28 +417,16 @@ export default function Toolbar() {
                   {drawerPanel === 'history' ? 'History' : 'Saved Presets'}
                 </button>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <div style={{
-                    width: '26px',
-                    height: '26px',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'var(--accent)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}>
-                    <Filter size={13} color="var(--accent-text)" strokeWidth={2.5} />
-                  </div>
-                  <span style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: '13px',
-                    color: 'var(--text-primary)',
-                    letterSpacing: '0.08em',
-                  }}>
-                    Filtro
-                  </span>
-                </div>
+                <span style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--text-muted)',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                }}>
+                  Menu
+                </span>
               )}
               <button
                 onClick={closeDrawer}
@@ -455,7 +463,7 @@ export default function Toolbar() {
                   }}>
                     Schema
                   </span>
-                  <div role="tablist" aria-label="Schema selector" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                  <div role="tablist" aria-label="Schema selector" style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-1)' }}>
                     {ALL_SCHEMAS.map(s => (
                       <button
                         key={s.id}
@@ -463,25 +471,21 @@ export default function Toolbar() {
                         aria-selected={schema.id === s.id}
                         onClick={() => { setSchema(s); closeDrawer() }}
                         style={{
-                          padding: 'var(--space-2) var(--space-3)',
+                          flex: '1 1 calc(50% - 4px)',
+                          minWidth: 0,
+                          padding: 'var(--space-2) var(--space-2)',
                           borderRadius: 'var(--radius-sm)',
-                          border: `1px solid ${schema.id === s.id ? 'var(--accent)' : 'transparent'}`,
-                          backgroundColor: schema.id === s.id ? 'var(--accent)' : 'transparent',
+                          border: `1px solid ${schema.id === s.id ? 'var(--accent)' : 'var(--border)'}`,
+                          backgroundColor: schema.id === s.id ? 'var(--accent)' : 'var(--bg)',
                           color: schema.id === s.id ? 'var(--accent-text)' : 'var(--text-secondary)',
-                          fontSize: '13px',
+                          fontSize: '12px',
                           fontWeight: schema.id === s.id ? 600 : 400,
                           fontFamily: 'var(--font-sans)',
                           cursor: 'pointer',
-                          textAlign: 'left',
+                          textAlign: 'center',
                           transition: 'all 0.15s ease',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 'var(--space-2)',
                         }}
                       >
-                        {schema.id === s.id && (
-                          <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: 'var(--accent-text)', flexShrink: 0 }} />
-                        )}
                         {s.name}
                       </button>
                     ))}
