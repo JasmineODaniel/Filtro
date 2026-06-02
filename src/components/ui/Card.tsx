@@ -41,7 +41,7 @@ export function CardHeader({ children, style }: CardHeaderProps) {
         gap: '10px',
         padding: 'var(--space-3) var(--space-4)',
         borderBottom: '1px solid var(--border)',
-        backgroundColor: 'var(--bg-secondary)',
+        backgroundColor: 'var(--card-header-bg)',
         ...style,
       }}
     >

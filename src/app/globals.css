@@ -24,9 +24,11 @@
   --depth-2: #3b82f6;
   --depth-3: #a855f7;
   --depth-4: #f97316;
+  --card-header-bg: #1a1a1a;
   --syntax-keyword: #0070f3;
   --syntax-value: #16a34a;
   --syntax-operator: #9333ea;
+  --card-header-bg: #222222;
   --radius-sm: 6px;
   --radius: 8px;
   --radius-lg: 10px;
