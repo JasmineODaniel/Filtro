@@ -1,15 +1,19 @@
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useState } from 'react'
 import { useQueryStore } from '@/store'
 import { ALL_SCHEMAS } from '@/types/schema'
 import { validateImportedTree, MAX_IMPORT_FILE_SIZE } from '@/utils/sanitize'
 import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
+import { Check } from 'lucide-react'
 
 export default function Toolbar() {
   const { schema, setSchema, resetTree, validateQuery, pushHistory, savePreset, importTree, tree } = useQueryStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [showSaveModal, setShowSaveModal] = useState(false)
+  const [presetName, setPresetName] = useState('')
+  const [savedToast, setSavedToast] = useState(false)
 
   const handleImportClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -57,10 +61,15 @@ export default function Toolbar() {
     validateQuery()
   }, [pushHistory, validateQuery])
 
-  const handleSave = useCallback(() => {
-    const name = prompt('Preset name:')
-    if (name?.trim()) savePreset(name.trim())
-  }, [savePreset])
+  const handleSaveConfirm = useCallback(() => {
+    const name = presetName.trim()
+    if (!name) return
+    savePreset(name)
+    setPresetName('')
+    setShowSaveModal(false)
+    setSavedToast(true)
+    setTimeout(() => setSavedToast(false), 2500)
+  }, [presetName, savePreset])
 
   const ghostHover = useCallback((e: React.MouseEvent<HTMLButtonElement>, enter: boolean) => {
     e.currentTarget.style.backgroundColor = enter ? 'var(--bg-secondary)' : 'var(--surface)'
@@ -69,131 +78,259 @@ export default function Toolbar() {
   }, [])
 
   return (
-    <header
-      role="banner"
-      style={{
-        height: '52px',
-        borderBottom: '1px solid var(--border)',
-        backgroundColor: 'var(--surface)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 var(--space-5)',
-        flexShrink: 0,
-        boxShadow: 'var(--shadow)',
-      }}
-    >
-      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em' }}>Filtro</span>
-        <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
-        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Query Builder</span>
-        <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
-        <div
-          role="tablist"
-          aria-label="Schema selector"
-          style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginLeft: 'var(--space-1)' }}
-        >
-          {ALL_SCHEMAS.map(s => (
-            <button
-              key={s.id}
-              role="tab"
-              aria-selected={schema.id === s.id}
-              onClick={() => setSchema(s)}
-              style={{
-                padding: '3px var(--space-3)',
-                borderRadius: 'var(--radius-sm)',
-                border: 'none',
-                backgroundColor: schema.id === s.id ? 'var(--accent)' : 'transparent',
-                color: schema.id === s.id ? 'var(--accent-text)' : 'var(--text-muted)',
-                fontSize: '12px',
-                fontWeight: schema.id === s.id ? 600 : 400,
-                fontFamily: 'var(--font-sans)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
+    <>
+      <header
+        role="banner"
+        style={{
+          height: '52px',
+          borderBottom: '1px solid var(--border)',
+          backgroundColor: 'var(--surface)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 var(--space-5)',
+          flexShrink: 0,
+          boxShadow: 'var(--shadow)',
+          position: 'relative',
+          zIndex: 30,
+        }}
+      >
+        <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em' }}>Filtro</span>
+          <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Query Builder</span>
+          <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
+          <div
+            role="tablist"
+            aria-label="Schema selector"
+            style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginLeft: 'var(--space-1)' }}
+          >
+            {ALL_SCHEMAS.map(s => (
+              <button
+                key={s.id}
+                role="tab"
+                aria-selected={schema.id === s.id}
+                onClick={() => setSchema(s)}
+                style={{
+                  padding: '3px var(--space-3)',
+                  borderRadius: 'var(--radius-sm)',
+                  border: 'none',
+                  backgroundColor: schema.id === s.id ? 'var(--accent)' : 'transparent',
+                  color: schema.id === s.id ? 'var(--accent-text)' : 'var(--text-muted)',
+                  fontSize: '12px',
+                  fontWeight: schema.id === s.id ? 600 : 400,
+                  fontFamily: 'var(--font-sans)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+        </nav>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Button
+            variant="primary"
+            size="md"
+            label="Reset query"
+            title="Reset query (Ctrl+R)"
+            onClick={resetTree}
+            style={{ width: '32px', padding: 0 }}
+            onMouseEnter={e => ghostHover(e, true)}
+            onMouseLeave={e => ghostHover(e, false)}
+          >
+            <Icon name="reset" size={15} />
+          </Button>
+
+          <Button
+            variant="primary"
+            size="md"
+            label="Export query as JSON"
+            title="Export query (Ctrl+E)"
+            onClick={handleExport}
+            style={{ width: '32px', padding: 0 }}
+            onMouseEnter={e => ghostHover(e, true)}
+            onMouseLeave={e => ghostHover(e, false)}
+          >
+            <Icon name="download" size={15} />
+          </Button>
+
+          <Button
+            variant="primary"
+            size="md"
+            label="Import query from JSON"
+            title="Import query from JSON file (Ctrl+I)"
+            onClick={handleImportClick}
+            style={{ width: '32px', padding: 0 }}
+            onMouseEnter={e => ghostHover(e, true)}
+            onMouseLeave={e => ghostHover(e, false)}
+          >
+            <Icon name="upload" size={15} />
+          </Button>
+
+          <div style={{ position: 'relative' }}>
+            <Button
+              variant="primary"
+              size="md"
+              label="Save as preset"
+              title="Save as preset (Ctrl+S)"
+              onClick={() => { setShowSaveModal(v => !v); setPresetName('') }}
+              style={{ width: '32px', padding: 0 }}
+              onMouseEnter={e => ghostHover(e, true)}
+              onMouseLeave={e => ghostHover(e, false)}
             >
-              {s.name}
-            </button>
-          ))}
+              <Icon name="save" size={15} />
+            </Button>
+
+            {showSaveModal && (
+              <>
+                <div
+                  style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+                  onClick={() => setShowSaveModal(false)}
+                  aria-hidden="true"
+                />
+                <div
+                  role="dialog"
+                  aria-label="Save preset"
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 8px)',
+                    right: 0,
+                    zIndex: 50,
+                    width: '240px',
+                    backgroundColor: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-lg)',
+                    boxShadow: 'var(--shadow-lg)',
+                    padding: 'var(--space-3)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--space-2)',
+                  }}
+                >
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+                    Save preset
+                  </span>
+                  <input
+                    autoFocus
+                    type="text"
+                    value={presetName}
+                    onChange={e => setPresetName(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleSaveConfirm()
+                      if (e.key === 'Escape') setShowSaveModal(false)
+                    }}
+                    placeholder="Preset name..."
+                    style={{
+                      height: '30px',
+                      padding: '0 var(--space-2)',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border)',
+                      backgroundColor: 'var(--bg)',
+                      color: 'var(--text-primary)',
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                      width: '100%',
+                    }}
+                  />
+                  <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                    <button
+                      onClick={handleSaveConfirm}
+                      disabled={!presetName.trim()}
+                      style={{
+                        flex: 1,
+                        height: '28px',
+                        borderRadius: 'var(--radius-sm)',
+                        border: 'none',
+                        backgroundColor: presetName.trim() ? 'var(--accent)' : 'var(--bg-tertiary)',
+                        color: presetName.trim() ? 'var(--accent-text)' : 'var(--text-muted)',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        fontFamily: 'var(--font-sans)',
+                        cursor: presetName.trim() ? 'pointer' : 'not-allowed',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setShowSaveModal(false)}
+                      style={{
+                        height: '28px',
+                        padding: '0 var(--space-3)',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid var(--border)',
+                        backgroundColor: 'transparent',
+                        color: 'var(--text-secondary)',
+                        fontSize: '11px',
+                        fontFamily: 'var(--font-sans)',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <Button
+            variant="accent"
+            size="md"
+            label="Run Query"
+            title="Run Query (Ctrl+Enter)"
+            onClick={handleRun}
+            style={{ width: '32px', padding: 0 }}
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
+          >
+            <Icon name="play" size={15} />
+          </Button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            aria-hidden="true"
+            tabIndex={-1}
+            style={{ display: 'none' }}
+            onChange={handleImport}
+          />
         </div>
-      </nav>
+      </header>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-        <Button
-          variant="primary"
-          size="md"
-          label="Reset query"
-          title="Reset query (Ctrl+R)"
-          onClick={resetTree}
-          style={{ width: '32px', padding: 0 }}
-          onMouseEnter={e => ghostHover(e, true)}
-          onMouseLeave={e => ghostHover(e, false)}
+      {savedToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            padding: 'var(--space-2) var(--space-4)',
+            backgroundColor: 'var(--accent)',
+            color: 'var(--accent-text)',
+            borderRadius: 'var(--radius)',
+            boxShadow: 'var(--shadow-lg)',
+            fontSize: '12px',
+            fontWeight: 600,
+            fontFamily: 'var(--font-sans)',
+            animation: 'slideUp 0.2s ease',
+          }}
         >
-          <Icon name="reset" size={15} />
-        </Button>
-
-        <Button
-          variant="primary"
-          size="md"
-          label="Export query as JSON"
-          title="Export query (Ctrl+E)"
-          onClick={handleExport}
-          style={{ width: '32px', padding: 0 }}
-          onMouseEnter={e => ghostHover(e, true)}
-          onMouseLeave={e => ghostHover(e, false)}
-        >
-          <Icon name="download" size={15} />
-        </Button>
-
-        <Button
-          variant="primary"
-          size="md"
-          label="Import query from JSON"
-          title="Import query (Ctrl+I)"
-          onClick={handleImportClick}
-          style={{ width: '32px', padding: 0 }}
-          onMouseEnter={e => ghostHover(e, true)}
-          onMouseLeave={e => ghostHover(e, false)}
-        >
-          <Icon name="upload" size={15} />
-        </Button>
-
-        <Button
-          variant="primary"
-          size="md"
-          label="Save as preset"
-          title="Save preset (Ctrl+S)"
-          onClick={handleSave}
-          style={{ width: '32px', padding: 0 }}
-          onMouseEnter={e => ghostHover(e, true)}
-          onMouseLeave={e => ghostHover(e, false)}
-        >
-          <Icon name="save" size={15} />
-        </Button>
-
-        <Button
-          variant="accent"
-          size="md"
-          label="Run Query"
-          title="Run Query (Ctrl+Enter)"
-          onClick={handleRun}
-          style={{ width: '32px', padding: 0 }}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
-        >
-          <Icon name="play" size={15} />
-        </Button>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          aria-hidden="true"
-          tabIndex={-1}
-          style={{ display: 'none' }}
-          onChange={handleImport}
-        />
-      </div>
-    </header>
+          <Check size={13} />
+          Preset saved
+        </div>
+      )}
+    </>
   )
 }

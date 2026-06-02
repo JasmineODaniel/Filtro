@@ -139,7 +139,9 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
               variant="primary"
               size="sm"
               label="Add rule to group"
+              title="Add rule"
               onClick={() => addRule(group.id)}
+              style={{ width: '28px', padding: 0 }}
               onMouseEnter={e => {
                 e.currentTarget.style.backgroundColor = 'var(--accent)'
                 e.currentTarget.style.color = 'var(--accent-text)'
@@ -151,14 +153,16 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
                 e.currentTarget.style.borderColor = 'var(--border)'
               }}
             >
-              <Plus size={11} /> Add Rule
+              <Plus size={12} />
             </Button>
 
             <Button
               variant="primary"
               size="sm"
               label="Add nested group"
+              title="Add group"
               onClick={() => addGroup(group.id)}
+              style={{ width: '28px', padding: 0 }}
               onMouseEnter={e => {
                 e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
                 e.currentTarget.style.borderColor = 'var(--border-strong)'
@@ -168,7 +172,7 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
                 e.currentTarget.style.borderColor = 'var(--border)'
               }}
             >
-              <FolderPlus size={11} /> Add Group
+              <FolderPlus size={12} />
             </Button>
 
             {!isRoot && (
@@ -233,6 +237,7 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
                 </div>
               </SortableContext>
             </DndContext>
+
           </CardBody>
         )}
       </Card>

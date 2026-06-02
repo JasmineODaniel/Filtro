@@ -2,10 +2,11 @@
 
 import { memo, useMemo, useState } from 'react'
 import { useQueryStore } from '@/store'
-import { generateSQL, generateMongo } from '@/utils'
+import { generateSQL, generateMongo, generateGraphQL } from '@/utils'
 import { Copy, Check } from 'lucide-react'
 
 const SQL_KEYWORDS = ['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'NOT', 'IN', 'BETWEEN', 'LIKE', 'IS', 'NULL', 'REGEXP']
+const GQL_KEYWORDS = ['query', 'mutation', 'subscription', 'AND', 'OR', 'where', 'filter']
 
 function highlightSQL(sql: string): React.ReactNode[] {
   const lines = sql.split('\n')
@@ -33,12 +34,39 @@ function highlightSQL(sql: string): React.ReactNode[] {
   })
 }
 
+function highlightGQL(gql: string): React.ReactNode[] {
+  const lines = gql.split('\n')
+  return lines.map((line, lineIdx) => {
+    const tokens = line.split(/(\s+|"[^"]*"|\b\w+\b)/).filter(Boolean)
+    return (
+      <div key={lineIdx}>
+        {tokens.map((token, i) => {
+          if (GQL_KEYWORDS.includes(token)) {
+            return <span key={i} style={{ color: 'var(--syntax-keyword)', fontWeight: 600 }}>{token}</span>
+          }
+          if (token.startsWith('"') && token.endsWith('"')) {
+            return <span key={i} style={{ color: 'var(--syntax-value)' }}>{token}</span>
+          }
+          if (/^-?\d+(\.\d+)?$/.test(token)) {
+            return <span key={i} style={{ color: 'var(--syntax-value)' }}>{token}</span>
+          }
+          if (token === 'null' || token === 'true' || token === 'false') {
+            return <span key={i} style={{ color: 'var(--syntax-operator)' }}>{token}</span>
+          }
+          return <span key={i}>{token}</span>
+        })}
+      </div>
+    )
+  })
+}
+
 function QueryPreview() {
   const { tree, schema, previewMode, setPreviewMode } = useQueryStore()
   const [copied, setCopied] = useState(false)
 
   const output = useMemo(() => {
     if (previewMode === 'sql') return generateSQL(tree.root, schema.name.toLowerCase())
+    if (previewMode === 'graphql') return generateGraphQL(tree.root, schema.name.toLowerCase(), schema.fields.map(f => f.name))
     return generateMongo(tree.root)
   }, [tree, schema, previewMode])
 
@@ -79,7 +107,7 @@ function QueryPreview() {
         </span>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {(['sql', 'mongo'] as const).map(mode => (
+          {(['sql', 'mongo', 'graphql'] as const).map(mode => (
             <button
               key={mode}
               onClick={() => setPreviewMode(mode)}
@@ -140,7 +168,7 @@ function QueryPreview() {
           wordBreak: 'break-word',
         }}
       >
-        {previewMode === 'sql' ? highlightSQL(output) : output}
+        {previewMode === 'sql' ? highlightSQL(output) : previewMode === 'graphql' ? highlightGQL(output) : output}
       </pre>
     </div>
   )

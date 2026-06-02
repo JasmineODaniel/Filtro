@@ -77,7 +77,7 @@ interface QueryStore {
   presets: QueryPreset[]
   history: QueryHistoryEntry[]
   activePresetId: string | null
-  previewMode: 'sql' | 'mongo'
+  previewMode: 'sql' | 'mongo' | 'graphql'
   theme: 'light' | 'dark'
 
   setSchema: (schema: Schema) => void
@@ -96,7 +96,7 @@ interface QueryStore {
   pushHistory: () => void
   loadHistory: (entryId: string) => void
   clearHistory: () => void
-  setPreviewMode: (mode: 'sql' | 'mongo') => void
+  setPreviewMode: (mode: 'sql' | 'mongo' | 'graphql') => void
   toggleTheme: () => void
   importTree: (tree: QueryTree) => void
 }
@@ -219,7 +219,7 @@ export const useQueryStore = create<QueryStore>((set, get) => ({
 
   clearHistory: () => set({ history: [] }),
 
-  setPreviewMode: (mode: 'sql' | 'mongo') => set({ previewMode: mode }),
+  setPreviewMode: (mode: 'sql' | 'mongo' | 'graphql') => set({ previewMode: mode }),
 
   toggleTheme: () => set((state: QueryStore) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
 

@@ -102,6 +102,30 @@ export function StaggeredItem({ children, index, style }: StaggeredItemProps) {
   )
 }
 
+interface StaggeredRowProps {
+  children: React.ReactNode
+  index: number
+  style?: React.CSSProperties
+  onMouseEnter?: React.MouseEventHandler<HTMLTableRowElement>
+  onMouseLeave?: React.MouseEventHandler<HTMLTableRowElement>
+}
+
+export function StaggeredRow({ children, index, style, onMouseEnter, onMouseLeave }: StaggeredRowProps) {
+  return (
+    <motion.tr
+      initial={variants.fadeIn.initial}
+      animate={variants.fadeIn.animate}
+      exit={variants.fadeIn.exit}
+      transition={stagger(index)}
+      style={style}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      {children}
+    </motion.tr>
+  )
+}
+
 interface OperatorToggleProps {
   children: React.ReactNode
   onClick: () => void

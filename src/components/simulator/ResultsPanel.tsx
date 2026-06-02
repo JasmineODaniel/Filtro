@@ -7,7 +7,7 @@ import { MOCK_DATA } from '@/schemas/mock-data'
 import { Icon } from '@/components/ui/Icon'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { AnimatedItem, AnimatedPresenceWrapper, StaggeredItem } from '@/components/ui/Animated'
+import { AnimatedItem, AnimatedPresenceWrapper, StaggeredRow } from '@/components/ui/Animated'
 import { smooth } from '@/hooks/useAnimation'
 
 function ResultsPanel() {
@@ -162,7 +162,7 @@ function ResultsPanel() {
               fontFamily: 'var(--font-sans)',
             }}>
               <thead>
-                <tr style={{ backgroundColor: '#111111' }}>
+                <tr style={{ backgroundColor: '#2d2d2d' }}>
                   {columns.map(col => (
                     <th
                       key={col}
@@ -192,45 +192,45 @@ function ResultsPanel() {
               </thead>
               <tbody>
                 {paginated.map((row, i) => (
-                  <StaggeredItem key={i} index={i}>
-                    <tr
-                      style={{ backgroundColor: i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)', display: 'table-row' }}
-                      onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
-                      onMouseLeave={e => e.currentTarget.style.backgroundColor = i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)'}
-                    >
-                      {columns.map(col => {
-                        const val = row[col]
-                        const isBoolean = typeof val === 'boolean'
-                        const isStatus = col === 'status'
-                        return (
-                          <td
-                            key={col}
-                            style={{
-                              padding: 'var(--space-2) var(--space-3)',
-                              borderBottom: '1px solid var(--border)',
-                              color: 'var(--text-primary)',
-                              whiteSpace: 'nowrap',
-                              maxWidth: '140px',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {isBoolean ? (
-                              <Badge variant={val ? 'accent' : 'muted'} pill>
-                                {String(val)}
-                              </Badge>
-                            ) : isStatus ? (
-                              <Badge variant="depth" pill>
-                                {String(val)}
-                              </Badge>
-                            ) : (
-                              String(val ?? '—')
-                            )}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  </StaggeredItem>
+                  <StaggeredRow
+                    key={i}
+                    index={i}
+                    style={{ backgroundColor: i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)' }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)'}
+                  >
+                    {columns.map(col => {
+                      const val = row[col]
+                      const isBoolean = typeof val === 'boolean'
+                      const isStatus = col === 'status'
+                      return (
+                        <td
+                          key={col}
+                          style={{
+                            padding: 'var(--space-2) var(--space-3)',
+                            borderBottom: '1px solid var(--border)',
+                            color: 'var(--text-primary)',
+                            whiteSpace: 'nowrap',
+                            maxWidth: '140px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {isBoolean ? (
+                            <Badge variant={val ? 'accent' : 'muted'} pill>
+                              {String(val)}
+                            </Badge>
+                          ) : isStatus ? (
+                            <Badge variant="depth" pill>
+                              {String(val)}
+                            </Badge>
+                          ) : (
+                            String(val ?? '—')
+                          )}
+                        </td>
+                      )
+                    })}
+                  </StaggeredRow>
                 ))}
               </tbody>
             </table>
