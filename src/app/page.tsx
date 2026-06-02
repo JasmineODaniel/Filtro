@@ -11,7 +11,7 @@ const FEATURES = [
 ]
 
 const STEPS = [
-  { num: '01', title: 'Pick a schema', body: 'Choose Users, Products or Orders. Each schema has its own fields and data types. The whole builder adapts instantly.', cls: 'lp-step-right' },
+  { num: '01', title: 'Pick a schema', body: 'Choose Users, Products or Orders. Each schema has its own fields and data types. The whole builder adapts instantly.', cls: 'lp-step-center' },
   { num: '02', title: 'Build your filter', body: 'Add rules. Pick a field, pick an operator, set a value. Nest groups for AND/OR logic. Drag to reorder.', cls: 'lp-step-left' },
   { num: '03', title: 'Execute & read results', body: 'Hit Execute. Your filter runs against the mock dataset and matching records appear in a sortable, paginated table.', cls: 'lp-step-center' },
 ]
@@ -22,7 +22,7 @@ const MOCK_RULES = [
   { field: 'plan', op: 'equals', val: 'premium' },
 ]
 
-const CONNECTOR_PATH = 'M 410,20 L 410,105 L 10,105 L 10,195 L 10,295 L 360,295 L 360,400'
+const CONNECTOR_PATH = 'M 360,20 L 360,105 L 10,105 L 10,195 L 10,295 L 360,295 L 360,400'
 
 export default function LandingPage() {
   return (
