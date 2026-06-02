@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useQueryStore } from '@/store'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { History, BookmarkCheck, Sun, Moon, Filter } from 'lucide-react'
 import HistoryPanel from './HistoryPanel'
 import PresetsPanel from './PresetsPanel'
@@ -59,6 +60,9 @@ function NavItem({ icon, label, active, onClick }: NavItemProps) {
 export default function Sidebar() {
   const { toggleTheme, theme } = useQueryStore()
   const [activePanel, setActivePanel] = useState<Panel>(null)
+  const isMobile = useIsMobile()
+
+  if (isMobile) return null
 
   const togglePanel = (panel: Panel) => {
     setActivePanel(prev => prev === panel ? null : panel)

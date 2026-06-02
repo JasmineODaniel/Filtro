@@ -11,7 +11,7 @@ import { AnimatedItem, AnimatedPresenceWrapper, StaggeredRow } from '@/component
 import { smooth } from '@/hooks/useAnimation'
 
 function ResultsPanel() {
-  const { tree, schema, pushHistory } = useQueryStore()
+  const { tree, schema, pushHistory, validateQuery } = useQueryStore()
   const [isRunning, setIsRunning] = useState(false)
   const [hasRun, setHasRun] = useState(false)
   const [results, setResults] = useState<Record<string, unknown>[]>([])
@@ -42,6 +42,7 @@ function ResultsPanel() {
   const handleRun = () => {
     setIsRunning(true)
     pushHistory()
+    validateQuery()
     setTimeout(() => {
       const dataset = MOCK_DATA[schema.id] ?? []
       const matched = executeQuery(tree.root, dataset)

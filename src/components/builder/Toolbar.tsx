@@ -7,15 +7,26 @@ import { ALL_SCHEMAS } from '@/types/schema'
 import { validateImportedTree, MAX_IMPORT_FILE_SIZE } from '@/utils/sanitize'
 import { Button } from '@/components/ui/Button'
 import { Icon } from '@/components/ui/Icon'
-import { Check } from 'lucide-react'
+import { Check, Menu, X, History, BookmarkCheck, Filter, Sun, Moon, ChevronRight } from 'lucide-react'
+import HistoryPanel from './HistoryPanel'
+import PresetsPanel from './PresetsPanel'
+
+type DrawerPanel = 'history' | 'presets' | null
 
 export default function Toolbar() {
-  const { schema, setSchema, resetTree, validateQuery, pushHistory, savePreset, importTree, tree } = useQueryStore()
+  const { schema, setSchema, resetTree, savePreset, importTree, tree, toggleTheme, theme } = useQueryStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [presetName, setPresetName] = useState('')
   const [savedToast, setSavedToast] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerPanel, setDrawerPanel] = useState<DrawerPanel>(null)
   const isMobile = useIsMobile()
+
+  const closeDrawer = useCallback(() => {
+    setDrawerOpen(false)
+    setDrawerPanel(null)
+  }, [])
 
   const handleImportClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -58,11 +69,6 @@ export default function Toolbar() {
     e.target.value = ''
   }, [importTree])
 
-  const handleRun = useCallback(() => {
-    pushHistory()
-    validateQuery()
-  }, [pushHistory, validateQuery])
-
   const handleSaveConfirm = useCallback(() => {
     const name = presetName.trim()
     if (!name) return
@@ -84,61 +90,99 @@ export default function Toolbar() {
       <header
         role="banner"
         style={{
-          minHeight: '52px',
+          height: '52px',
           borderBottom: '1px solid var(--border)',
           backgroundColor: 'var(--surface)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          flexWrap: isMobile ? 'wrap' : 'nowrap',
-          padding: isMobile ? 'var(--space-2) var(--space-3)' : '0 var(--space-5)',
-          gap: isMobile ? 'var(--space-2)' : '0',
+          padding: isMobile ? '0 var(--space-3)' : '0 var(--space-5)',
           flexShrink: 0,
           boxShadow: 'var(--shadow)',
           position: 'relative',
           zIndex: 30,
         }}
       >
-        <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-          {!isMobile && (
-            <>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em' }}>Filtro</span>
-              <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Query Builder</span>
-              <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
-            </>
-          )}
-          <div
-            role="tablist"
-            aria-label="Schema selector"
-            style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginLeft: 'var(--space-1)' }}
+        {isMobile ? (
+          <button
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open menu"
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: 'var(--radius)',
+              border: '1px solid var(--border)',
+              backgroundColor: 'transparent',
+              color: 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
           >
-            {ALL_SCHEMAS.map(s => (
-              <button
-                key={s.id}
-                role="tab"
-                aria-selected={schema.id === s.id}
-                onClick={() => setSchema(s)}
-                style={{
-                  padding: '3px var(--space-3)',
-                  borderRadius: 'var(--radius-sm)',
-                  border: 'none',
-                  backgroundColor: schema.id === s.id ? 'var(--accent)' : 'transparent',
-                  color: schema.id === s.id ? 'var(--accent-text)' : 'var(--text-muted)',
-                  fontSize: '12px',
-                  fontWeight: schema.id === s.id ? 600 : 400,
-                  fontFamily: 'var(--font-sans)',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                {s.name}
-              </button>
-            ))}
-          </div>
-        </nav>
+            <Menu size={16} />
+          </button>
+        ) : (
+          <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em' }}>Filtro</span>
+            <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Query Builder</span>
+            <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
+            <div
+              role="tablist"
+              aria-label="Schema selector"
+              style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginLeft: 'var(--space-1)' }}
+            >
+              {ALL_SCHEMAS.map(s => (
+                <button
+                  key={s.id}
+                  role="tab"
+                  aria-selected={schema.id === s.id}
+                  onClick={() => setSchema(s)}
+                  style={{
+                    padding: '3px var(--space-3)',
+                    borderRadius: 'var(--radius-sm)',
+                    border: 'none',
+                    backgroundColor: schema.id === s.id ? 'var(--accent)' : 'transparent',
+                    color: schema.id === s.id ? 'var(--accent-text)' : 'var(--text-muted)',
+                    fontSize: '12px',
+                    fontWeight: schema.id === s.id ? 600 : 400,
+                    fontFamily: 'var(--font-sans)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
+          </nav>
+        )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          {isMobile && (
+            <button
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: 'var(--radius)',
+                border: '1px solid var(--border)',
+                backgroundColor: 'transparent',
+                color: 'var(--text-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
+          )}
+
           <Button
             variant="primary"
             size="md"
@@ -287,19 +331,6 @@ export default function Toolbar() {
             )}
           </div>
 
-          <Button
-            variant="accent"
-            size="md"
-            label="Run Query"
-            title="Run Query (Ctrl+Enter)"
-            onClick={handleRun}
-            style={{ width: '32px', padding: 0 }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
-          >
-            <Icon name="play" size={15} />
-          </Button>
-
           <input
             ref={fileInputRef}
             type="file"
@@ -311,6 +342,202 @@ export default function Toolbar() {
           />
         </div>
       </header>
+
+      {isMobile && drawerOpen && (
+        <>
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(0,0,0,0.5)' }}
+            onClick={closeDrawer}
+            aria-hidden="true"
+          />
+          <div
+            role="dialog"
+            aria-label="Navigation menu"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              bottom: 0,
+              width: '280px',
+              zIndex: 201,
+              backgroundColor: 'var(--surface)',
+              borderRight: '1px solid var(--border)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-lg)',
+            }}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 'var(--space-4)',
+              borderBottom: '1px solid var(--border)',
+              flexShrink: 0,
+            }}>
+              {drawerPanel ? (
+                <button
+                  onClick={() => setDrawerPanel(null)}
+                  aria-label="Back to menu"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-2)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-secondary)',
+                    fontSize: '13px',
+                    fontFamily: 'var(--font-sans)',
+                    cursor: 'pointer',
+                    padding: 0,
+                  }}
+                >
+                  <ChevronRight size={14} style={{ transform: 'rotate(180deg)' }} />
+                  {drawerPanel === 'history' ? 'History' : 'Saved Presets'}
+                </button>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <div style={{
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: 'var(--radius-sm)',
+                    backgroundColor: 'var(--accent)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <Filter size={13} color="var(--accent-text)" strokeWidth={2.5} />
+                  </div>
+                  <span style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '13px',
+                    color: 'var(--text-primary)',
+                    letterSpacing: '0.08em',
+                  }}>
+                    Filtro
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={closeDrawer}
+                aria-label="Close menu"
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: 'var(--radius)',
+                  border: '1px solid var(--border)',
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-muted)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {!drawerPanel ? (
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--border)' }}>
+                  <span style={{
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    color: 'var(--text-muted)',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    fontFamily: 'var(--font-sans)',
+                    display: 'block',
+                    marginBottom: 'var(--space-2)',
+                  }}>
+                    Schema
+                  </span>
+                  <div role="tablist" aria-label="Schema selector" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                    {ALL_SCHEMAS.map(s => (
+                      <button
+                        key={s.id}
+                        role="tab"
+                        aria-selected={schema.id === s.id}
+                        onClick={() => { setSchema(s); closeDrawer() }}
+                        style={{
+                          padding: 'var(--space-2) var(--space-3)',
+                          borderRadius: 'var(--radius-sm)',
+                          border: `1px solid ${schema.id === s.id ? 'var(--accent)' : 'transparent'}`,
+                          backgroundColor: schema.id === s.id ? 'var(--accent)' : 'transparent',
+                          color: schema.id === s.id ? 'var(--accent-text)' : 'var(--text-secondary)',
+                          fontSize: '13px',
+                          fontWeight: schema.id === s.id ? 600 : 400,
+                          fontFamily: 'var(--font-sans)',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 'var(--space-2)',
+                        }}
+                      >
+                        {schema.id === s.id && (
+                          <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: 'var(--accent-text)', flexShrink: 0 }} />
+                        )}
+                        {s.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <nav aria-label="Sidebar navigation" style={{ padding: 'var(--space-2)' }}>
+                  {([
+                    { id: 'history' as const, label: 'History', icon: <History size={16} /> },
+                    { id: 'presets' as const, label: 'Saved Presets', icon: <BookmarkCheck size={16} /> },
+                  ]).map(item => (
+                    <button
+                      key={item.id}
+                      onClick={() => setDrawerPanel(item.id)}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: 'var(--space-3)',
+                        borderRadius: 'var(--radius)',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        color: 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '13px',
+                        transition: 'all 0.15s ease',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
+                        e.currentTarget.style.color = 'var(--text-primary)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.backgroundColor = 'transparent'
+                        e.currentTarget.style.color = 'var(--text-secondary)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                        {item.icon}
+                        {item.label}
+                      </div>
+                      <ChevronRight size={14} />
+                    </button>
+                  ))}
+                </nav>
+              </div>
+            ) : (
+              <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                {drawerPanel === 'history' && <HistoryPanel />}
+                {drawerPanel === 'presets' && <PresetsPanel />}
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {savedToast && (
         <div
