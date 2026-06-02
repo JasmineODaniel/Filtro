@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useQueryStore } from '@/store'
 import QueryGroupComponent from './QueryGroup'
 import QueryPreview from '@/components/preview/QueryPreview'
@@ -10,12 +10,25 @@ import Sidebar from './Sidebar'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
 export default function QueryBuilder() {
-  const { theme, tree } = useQueryStore()
+  const { theme, tree, pushHistory } = useQueryStore()
   useKeyboardShortcuts()
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
+
+  const prevTreeRef = useRef<string | null>(null)
+  useEffect(() => {
+    const serialized = JSON.stringify(tree)
+    if (prevTreeRef.current === null) {
+      prevTreeRef.current = serialized
+      return
+    }
+    if (prevTreeRef.current === serialized) return
+    prevTreeRef.current = serialized
+    const id = setTimeout(pushHistory, 1500)
+    return () => clearTimeout(id)
+  }, [tree, pushHistory])
 
   return (
     <div
@@ -51,10 +64,11 @@ export default function QueryBuilder() {
             <header style={{ marginBottom: 'var(--space-1)' }}>
               <h1
                 style={{
-                  fontSize: '20px',
-                  fontWeight: 700,
+                  fontSize: '18px',
+                  fontWeight: 400,
                   color: 'var(--text-primary)',
-                  letterSpacing: '-0.03em',
+                  letterSpacing: '0.04em',
+                  fontFamily: 'var(--font-display)',
                   marginBottom: 'var(--space-1)',
                 }}
               >
