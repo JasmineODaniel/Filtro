@@ -23,14 +23,17 @@ const createDefaultTree = (): QueryTree => ({
   root: createDefaultGroup(),
 })
 
-const updateNodeInGroup = (group: QueryGroup, nodeId: string, updater: (node: QueryNode) => QueryNode): QueryGroup => ({
-  ...group,
-  children: group.children.map(child => {
-    if (child.id === nodeId) return updater(child) as QueryNode
-    if (child.type === 'group') return updateNodeInGroup(child, nodeId, updater)
-    return child
-  }),
-})
+const updateNodeInGroup = (group: QueryGroup, nodeId: string, updater: (node: QueryNode) => QueryNode): QueryGroup => {
+  if (group.id === nodeId) return updater(group) as QueryGroup
+  return {
+    ...group,
+    children: group.children.map(child => {
+      if (child.id === nodeId) return updater(child) as QueryNode
+      if (child.type === 'group') return updateNodeInGroup(child, nodeId, updater)
+      return child
+    }),
+  }
+}
 
 const removeNodeFromGroup = (group: QueryGroup, nodeId: string): QueryGroup => ({
   ...group,
