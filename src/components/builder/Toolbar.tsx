@@ -84,7 +84,7 @@ export default function Toolbar() {
       }}
     >
       <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Filtro</span>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em' }}>Filtro</span>
         <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
         <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Query Builder</span>
         <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
@@ -123,60 +123,65 @@ export default function Toolbar() {
           variant="primary"
           size="md"
           label="Reset query"
-          title="Reset query ⌘R"
+          title="Reset query (Ctrl+R)"
           onClick={resetTree}
+          style={{ width: '32px', padding: 0 }}
           onMouseEnter={e => ghostHover(e, true)}
           onMouseLeave={e => ghostHover(e, false)}
         >
-          <Icon name="reset" size={12} /> Reset
+          <Icon name="reset" size={15} />
         </Button>
 
         <Button
           variant="primary"
           size="md"
           label="Export query as JSON"
-          title="Export ⌘E"
+          title="Export query (Ctrl+E)"
           onClick={handleExport}
+          style={{ width: '32px', padding: 0 }}
           onMouseEnter={e => ghostHover(e, true)}
           onMouseLeave={e => ghostHover(e, false)}
         >
-          <Icon name="download" size={12} /> Export
+          <Icon name="download" size={15} />
         </Button>
 
         <Button
           variant="primary"
           size="md"
           label="Import query from JSON"
-          title="Import ⌘I"
+          title="Import query (Ctrl+I)"
           onClick={handleImportClick}
+          style={{ width: '32px', padding: 0 }}
           onMouseEnter={e => ghostHover(e, true)}
           onMouseLeave={e => ghostHover(e, false)}
         >
-          <Icon name="upload" size={12} /> Import
+          <Icon name="upload" size={15} />
         </Button>
 
         <Button
           variant="primary"
           size="md"
           label="Save as preset"
-          title="Save preset ⌘S"
+          title="Save preset (Ctrl+S)"
           onClick={handleSave}
+          style={{ width: '32px', padding: 0 }}
           onMouseEnter={e => ghostHover(e, true)}
           onMouseLeave={e => ghostHover(e, false)}
         >
-          <Icon name="save" size={12} /> Save
+          <Icon name="save" size={15} />
         </Button>
 
         <Button
           variant="accent"
           size="md"
           label="Run Query"
-          title="Run Query ⌘↵"
+          title="Run Query (Ctrl+Enter)"
           onClick={handleRun}
+          style={{ width: '32px', padding: 0 }}
           onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--accent-hover)'}
           onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--accent)'}
         >
-          <Icon name="play" size={12} /> Run Query
+          <Icon name="play" size={15} />
         </Button>
 
         <input
