@@ -7,6 +7,8 @@ import { MOCK_DATA } from '@/schemas/mock-data'
 import { Icon } from '@/components/ui/Icon'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { AnimatedItem, AnimatedPresenceWrapper, StaggeredItem } from '@/components/ui/Animated'
+import { smooth } from '@/hooks/useAnimation'
 
 function ResultsPanel() {
   const { tree, schema, pushHistory } = useQueryStore()
@@ -83,11 +85,15 @@ function ResultsPanel() {
           }}>
             Results
           </span>
-          {hasRun && (
-            <Badge variant={results.length > 0 ? 'accent' : 'muted'} pill>
-              {results.length}
-            </Badge>
-          )}
+          <AnimatedPresenceWrapper>
+            {hasRun && (
+              <AnimatedItem variant="scaleIn" transition={smooth}>
+                <Badge variant={results.length > 0 ? 'accent' : 'muted'} pill>
+                  {results.length}
+                </Badge>
+              </AnimatedItem>
+            )}
+          </AnimatedPresenceWrapper>
         </div>
 
         <Button
@@ -103,43 +109,49 @@ function ResultsPanel() {
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', backgroundColor: 'var(--bg)' }}>
-        {!hasRun && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100%',
-            color: 'var(--text-muted)',
-            flexDirection: 'column',
-            gap: 'var(--space-3)',
-            padding: 'var(--space-6)',
-            textAlign: 'center',
-          }}>
-            <Icon name="play" size={28} strokeWidth={1} />
-            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', lineHeight: 1.5 }}>
-              Click Execute to run your<br />query against the mock dataset
-            </span>
-          </div>
-        )}
+        <AnimatedPresenceWrapper>
+          {!hasRun && (
+            <AnimatedItem variant="fadeIn" transition={smooth}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '200px',
+                color: 'var(--text-muted)',
+                flexDirection: 'column',
+                gap: 'var(--space-3)',
+                padding: 'var(--space-6)',
+                textAlign: 'center',
+              }}>
+                <Icon name="play" size={28} strokeWidth={1} />
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', lineHeight: 1.5 }}>
+                  Click Execute to run your<br />query against the mock dataset
+                </span>
+              </div>
+            </AnimatedItem>
+          )}
 
-        {hasRun && results.length === 0 && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100%',
-            color: 'var(--text-muted)',
-            flexDirection: 'column',
-            gap: 'var(--space-3)',
-            padding: 'var(--space-6)',
-            textAlign: 'center',
-          }}>
-            <span style={{ fontSize: '28px' }}>∅</span>
-            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px' }}>
-              No records matched your query
-            </span>
-          </div>
-        )}
+          {hasRun && results.length === 0 && (
+            <AnimatedItem variant="fadeIn" transition={smooth}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '200px',
+                color: 'var(--text-muted)',
+                flexDirection: 'column',
+                gap: 'var(--space-3)',
+                padding: 'var(--space-6)',
+                textAlign: 'center',
+              }}>
+                <span style={{ fontSize: '28px' }}>∅</span>
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px' }}>
+                  No records matched your query
+                </span>
+              </div>
+            </AnimatedItem>
+          )}
+        </AnimatedPresenceWrapper>
 
         {hasRun && results.length > 0 && (
           <div style={{ overflowX: 'auto' }}>
@@ -171,10 +183,7 @@ function ResultsPanel() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                         {col}
                         {sortField === col && (
-                          <Icon
-                            name={sortDir === 'asc' ? 'chevronDown' : 'chevronRight'}
-                            size={10}
-                          />
+                          <Icon name={sortDir === 'asc' ? 'chevronDown' : 'chevronRight'} size={10} />
                         )}
                       </div>
                     </th>
@@ -183,44 +192,45 @@ function ResultsPanel() {
               </thead>
               <tbody>
                 {paginated.map((row, i) => (
-                  <tr
-                    key={i}
-                    style={{ backgroundColor: i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)' }}
-                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)'}
-                  >
-                    {columns.map(col => {
-                      const val = row[col]
-                      const isBoolean = typeof val === 'boolean'
-                      const isStatus = col === 'status'
-                      return (
-                        <td
-                          key={col}
-                          style={{
-                            padding: 'var(--space-2) var(--space-3)',
-                            borderBottom: '1px solid var(--border)',
-                            color: 'var(--text-primary)',
-                            whiteSpace: 'nowrap',
-                            maxWidth: '140px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {isBoolean ? (
-                            <Badge variant={val ? 'accent' : 'muted'} pill>
-                              {String(val)}
-                            </Badge>
-                          ) : isStatus ? (
-                            <Badge variant="depth" pill>
-                              {String(val)}
-                            </Badge>
-                          ) : (
-                            String(val ?? '—')
-                          )}
-                        </td>
-                      )
-                    })}
-                  </tr>
+                  <StaggeredItem key={i} index={i}>
+                    <tr
+                      style={{ backgroundColor: i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)', display: 'table-row' }}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = i % 2 === 0 ? 'var(--surface)' : 'var(--bg-secondary)'}
+                    >
+                      {columns.map(col => {
+                        const val = row[col]
+                        const isBoolean = typeof val === 'boolean'
+                        const isStatus = col === 'status'
+                        return (
+                          <td
+                            key={col}
+                            style={{
+                              padding: 'var(--space-2) var(--space-3)',
+                              borderBottom: '1px solid var(--border)',
+                              color: 'var(--text-primary)',
+                              whiteSpace: 'nowrap',
+                              maxWidth: '140px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {isBoolean ? (
+                              <Badge variant={val ? 'accent' : 'muted'} pill>
+                                {String(val)}
+                              </Badge>
+                            ) : isStatus ? (
+                              <Badge variant="depth" pill>
+                                {String(val)}
+                              </Badge>
+                            ) : (
+                              String(val ?? '—')
+                            )}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  </StaggeredItem>
                 ))}
               </tbody>
             </table>
