@@ -178,11 +178,12 @@ export const useQueryStore = create<QueryStore>((set, get) => ({
   },
 
   savePreset: (name: string) => {
-    const { tree } = get()
+    const { tree, schema } = get()
     const preset: QueryPreset = {
       id: generateId(),
       name,
       tree: JSON.parse(JSON.stringify(tree)),
+      schemaId: schema.id,
       createdAt: new Date().toISOString(),
     }
     set((state: QueryStore) => ({ presets: [...state.presets, preset], activePresetId: preset.id }))
@@ -191,7 +192,9 @@ export const useQueryStore = create<QueryStore>((set, get) => ({
   loadPreset: (presetId: string) => {
     const { presets } = get()
     const preset = presets.find((p: QueryPreset) => p.id === presetId)
-    if (preset) set({ tree: JSON.parse(JSON.stringify(preset.tree)), activePresetId: presetId, validationErrors: [] })
+    if (!preset) return
+    const schema = ALL_SCHEMAS.find(s => s.id === preset.schemaId) ?? ALL_SCHEMAS[0]
+    set({ tree: JSON.parse(JSON.stringify(preset.tree)), schema, activePresetId: presetId, validationErrors: [] })
   },
 
   deletePreset: (presetId: string) => {
@@ -202,10 +205,13 @@ export const useQueryStore = create<QueryStore>((set, get) => ({
   },
 
   pushHistory: () => {
-    const { tree } = get()
+    const { tree, schema, history } = get()
+    const serialized = JSON.stringify(tree)
+    if (history.length > 0 && JSON.stringify(history[0].tree) === serialized) return
     const entry: QueryHistoryEntry = {
       id: generateId(),
-      tree: JSON.parse(JSON.stringify(tree)),
+      tree: JSON.parse(serialized),
+      schemaId: schema.id,
       timestamp: new Date().toISOString(),
     }
     set((state: QueryStore) => ({ history: [entry, ...state.history].slice(0, 50) }))
@@ -214,7 +220,9 @@ export const useQueryStore = create<QueryStore>((set, get) => ({
   loadHistory: (entryId: string) => {
     const { history } = get()
     const entry = history.find((h: QueryHistoryEntry) => h.id === entryId)
-    if (entry) set({ tree: JSON.parse(JSON.stringify(entry.tree)), validationErrors: [] })
+    if (!entry) return
+    const schema = ALL_SCHEMAS.find(s => s.id === entry.schemaId) ?? ALL_SCHEMAS[0]
+    set({ tree: JSON.parse(JSON.stringify(entry.tree)), schema, validationErrors: [] })
   },
 
   clearHistory: () => set({ history: [] }),
