@@ -11,9 +11,9 @@ const FEATURES = [
 ]
 
 const STEPS = [
-  { num: '01', title: 'Pick a schema', body: 'Choose Users, Products or Orders. Each schema has its own fields and data types. The whole builder adapts instantly.', cls: 'lp-step-center' },
-  { num: '02', title: 'Build your filter', body: 'Add rules. Pick a field, pick an operator, set a value. Nest groups for AND/OR logic. Drag to reorder.', cls: 'lp-step-left' },
-  { num: '03', title: 'Execute & read results', body: 'Hit Execute. Your filter runs against the mock dataset and matching records appear in a sortable, paginated table.', cls: 'lp-step-center' },
+  { num: '01', title: 'Pick a schema', body: 'Choose Users, Products or Orders. Each schema has its own fields and data types. The whole builder adapts instantly.', cls: 'lp-step-center', shift: { transform: 'translateY(-90px)' }, paraShift: {} },
+  { num: '02', title: 'Build your filter', body: 'Add rules. Pick a field, pick an operator, set a value. Nest groups for AND/OR logic. Drag to reorder.', cls: 'lp-step-left', shift: { transform: 'translateX(-30px) translateY(-45px)' }, paraShift: { marginLeft: '40px' } },
+  { num: '03', title: 'Execute & read results', body: 'Hit Execute. Your filter runs against the mock dataset and matching records appear in a sortable, paginated table.', cls: 'lp-step-center', shift: { transform: 'translateY(5px)' }, paraShift: {} },
 ]
 
 const MOCK_RULES = [
@@ -22,7 +22,7 @@ const MOCK_RULES = [
   { field: 'plan', op: 'equals', val: 'premium' },
 ]
 
-const CONNECTOR_PATH = 'M 360,20 L 360,105 L 10,105 L 10,195 L 10,295 L 360,295 L 360,400'
+const CONNECTOR_PATH = 'M 360,20 L 360,105 L 2,105 L 2,195 L 2,300 L 360,300 L 360,405'
 
 export default function LandingPage() {
   return (
@@ -109,12 +109,14 @@ export default function LandingPage() {
 
       <section id="how-it-works" style={{ padding: '100px 40px', backgroundColor: 'var(--surface)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '16px' }}>
-            How it works
-          </p>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 400, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-primary)', marginBottom: '64px' }}>
-            Three steps to your filter
-          </h2>
+          <div style={{ transform: 'translateY(-55px)' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '16px' }}>
+              How it works
+            </p>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(22px, 3vw, 32px)', fontWeight: 400, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-primary)', marginBottom: '64px' }}>
+              Three steps to your filter
+            </h2>
+          </div>
 
           <div className="lp-steps-grid">
             <svg className="lp-connector" viewBox="0 0 720 530" preserveAspectRatio="xMidYMid slice">
@@ -125,10 +127,10 @@ export default function LandingPage() {
             </svg>
 
             {STEPS.map(s => (
-              <div key={s.num} className={s.cls} style={{ minHeight: '150px' }}>
+              <div key={s.num} className={s.cls} style={{ minHeight: '150px', ...s.shift }}>
                 <div style={{ fontFamily: 'var(--font-display)', fontSize: '40px', fontWeight: 400, color: 'var(--accent)', opacity: 0.4, letterSpacing: '0.06em', marginBottom: '14px', lineHeight: 1 }}>{s.num}</div>
                 <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '10px' }}>{s.title}</h3>
-                <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.7 }}>{s.body}</p>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.7, ...s.paraShift }}>{s.body}</p>
               </div>
             ))}
           </div>
