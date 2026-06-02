@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useCallback, useState } from 'react'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import { useQueryStore } from '@/store'
 import { ALL_SCHEMAS } from '@/types/schema'
 import { validateImportedTree, MAX_IMPORT_FILE_SIZE } from '@/utils/sanitize'
@@ -14,6 +15,7 @@ export default function Toolbar() {
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [presetName, setPresetName] = useState('')
   const [savedToast, setSavedToast] = useState(false)
+  const isMobile = useIsMobile()
 
   const handleImportClick = useCallback(() => {
     fileInputRef.current?.click()
@@ -82,13 +84,15 @@ export default function Toolbar() {
       <header
         role="banner"
         style={{
-          height: '52px',
+          minHeight: '52px',
           borderBottom: '1px solid var(--border)',
           backgroundColor: 'var(--surface)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 var(--space-5)',
+          flexWrap: isMobile ? 'wrap' : 'nowrap',
+          padding: isMobile ? 'var(--space-2) var(--space-3)' : '0 var(--space-5)',
+          gap: isMobile ? 'var(--space-2)' : '0',
           flexShrink: 0,
           boxShadow: 'var(--shadow)',
           position: 'relative',
@@ -96,10 +100,14 @@ export default function Toolbar() {
         }}
       >
         <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-          <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em' }}>Filtro</span>
-          <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Query Builder</span>
-          <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
+          {!isMobile && (
+            <>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.08em' }}>Filtro</span>
+              <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Query Builder</span>
+              <Icon name="chevronRight" size={12} color="var(--text-muted)" aria-hidden="true" />
+            </>
+          )}
           <div
             role="tablist"
             aria-label="Schema selector"
