@@ -91,6 +91,7 @@ function QueryRuleComponent({ rule }: Props) {
             placeholder="From"
             aria-label="Range start value"
             error={!!error}
+            aria-describedby={error ? errorId : undefined}
           />
           <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>—</span>
           <ChipInput
@@ -101,6 +102,7 @@ function QueryRuleComponent({ rule }: Props) {
             placeholder="To"
             aria-label="Range end value"
             error={!!error}
+            aria-describedby={error ? errorId : undefined}
           />
         </div>
       )
