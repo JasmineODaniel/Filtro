@@ -182,9 +182,16 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   row-gap: 40px;
   column-gap: 60px;
 }
-.lp-step-right { grid-column: 2; }
-.lp-step-left  { grid-column: 1; }
-.lp-connector  {
+.lp-step-right  { grid-column: 2; }
+.lp-step-left   { grid-column: 1; }
+.lp-step-center {
+  grid-column: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.lp-connector {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
@@ -192,10 +199,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   overflow: visible;
 }
 @media (max-width: 640px) {
-  .lp-steps-grid {
-    grid-template-columns: 1fr;
-    max-width: 100%;
+  .lp-steps-grid { grid-template-columns: 1fr; max-width: 100%; }
+  .lp-step-right, .lp-step-left, .lp-step-center {
+    grid-column: 1;
+    align-items: flex-start;
+    text-align: left;
   }
-  .lp-step-right, .lp-step-left { grid-column: 1; }
   .lp-connector { display: none; }
 }
