@@ -24,11 +24,11 @@
   --depth-2: #3b82f6;
   --depth-3: #a855f7;
   --depth-4: #f97316;
-  --card-header-bg: #1a1a1a;
+  --card-header-bg: #222222;
+  --card-header-text: #cccccc;
   --syntax-keyword: #0070f3;
   --syntax-value: #16a34a;
   --syntax-operator: #9333ea;
-  --card-header-bg: #222222;
   --radius-sm: 6px;
   --radius: 8px;
   --radius-lg: 10px;
@@ -69,6 +69,7 @@
   --syntax-keyword: #c8ff00;
   --syntax-value: #4ade80;
   --syntax-operator: #e879f9;
+  --card-header-text: #e8e8e8;
 }
 
 * {
@@ -110,12 +111,20 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1a1a1a;
+  background: #bbbbbb;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #111111;
+  background: #999999;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3e3e3e;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5a;
 }
 
 code, pre, .mono {
@@ -191,12 +200,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: center;
   text-align: center;
 }
+.lp-steps-grid {
+  min-height: 530px;
+}
 .lp-connector {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
   pointer-events: none;
-  overflow: visible;
+  overflow: hidden;
 }
 @media (max-width: 640px) {
   .lp-steps-grid { grid-template-columns: 1fr; max-width: 100%; }
