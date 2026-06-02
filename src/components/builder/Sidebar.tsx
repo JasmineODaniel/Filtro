@@ -6,6 +6,8 @@ import { History, BookmarkCheck, Sun, Moon, Filter } from 'lucide-react'
 import HistoryPanel from './HistoryPanel'
 import PresetsPanel from './PresetsPanel'
 import { Button } from '@/components/ui/Button'
+import { AnimatedItem, AnimatedPresenceWrapper } from '@/components/ui/Animated'
+import { smooth } from '@/hooks/useAnimation'
 
 type Panel = 'history' | 'presets' | null
 
@@ -104,23 +106,10 @@ export default function Sidebar() {
             <Filter size={16} color="var(--accent-text)" strokeWidth={2.5} />
           </div>
           <div>
-            <div
-              style={{
-                fontSize: '15px',
-                fontWeight: 700,
-                color: 'var(--text-primary)',
-                letterSpacing: '-0.02em',
-              }}
-            >
+            <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               Filtro
             </div>
-            <div
-              style={{
-                fontSize: '10px',
-                color: 'var(--text-muted)',
-                fontFamily: 'var(--font-mono)',
-              }}
-            >
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               query builder
             </div>
           </div>
@@ -150,12 +139,7 @@ export default function Sidebar() {
           />
         </nav>
 
-        <div
-          style={{
-            padding: 'var(--space-3) var(--space-2)',
-            borderTop: '1px solid var(--border)',
-          }}
-        >
+        <div style={{ padding: 'var(--space-3) var(--space-2)', borderTop: '1px solid var(--border)' }}>
           <Button
             variant="ghost"
             size="md"
@@ -183,24 +167,32 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {activePanel && (
-        <div
-          style={{
-            width: '260px',
-            borderRight: '1px solid var(--border)',
-            backgroundColor: 'var(--surface)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            animation: 'slideIn 0.15s ease',
-          }}
-          role="complementary"
-          aria-label={activePanel === 'history' ? 'Query history panel' : 'Saved presets panel'}
-        >
-          {activePanel === 'history' && <HistoryPanel />}
-          {activePanel === 'presets' && <PresetsPanel />}
-        </div>
-      )}
+      <AnimatedPresenceWrapper>
+        {activePanel && (
+          <AnimatedItem
+            variant="slideIn"
+            transition={smooth}
+            style={{
+              width: '260px',
+              borderRight: '1px solid var(--border)',
+              backgroundColor: 'var(--surface)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              height: '100vh',
+            }}
+          >
+            <div
+              role="complementary"
+              aria-label={activePanel === 'history' ? 'Query history panel' : 'Saved presets panel'}
+              style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+            >
+              {activePanel === 'history' && <HistoryPanel />}
+              {activePanel === 'presets' && <PresetsPanel />}
+            </div>
+          </AnimatedItem>
+        )}
+      </AnimatedPresenceWrapper>
     </div>
   )
-}                                                                     
+}
