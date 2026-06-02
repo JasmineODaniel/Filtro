@@ -221,7 +221,14 @@ export const useQueryStore = create<QueryStore>((set, get) => ({
 
   setPreviewMode: (mode: 'sql' | 'mongo' | 'graphql') => set({ previewMode: mode }),
 
-  toggleTheme: () => set((state: QueryStore) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
+  toggleTheme: () => set((state: QueryStore) => {
+    const next = state.theme === 'dark' ? 'light' : 'dark'
+    try {
+      localStorage.setItem('filtro-theme', next)
+      document.documentElement.classList.toggle('dark', next === 'dark')
+    } catch {}
+    return { theme: next }
+  }),
 
   importTree: (tree: QueryTree) => set({ tree, validationErrors: [] }),
 }))
