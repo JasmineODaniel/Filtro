@@ -26,6 +26,13 @@ const validateRule = (rule: QueryRule, fields: SchemaField[]): ValidationError[]
     const [a, b] = (rule.value as [unknown, unknown]) ?? []
     if (a === undefined || a === '' || b === undefined || b === '') {
       errors.push({ nodeId: rule.id, message: 'Both values are required for between' })
+      return errors
+    }
+    if (field.type === 'number' && Number(a) > Number(b)) {
+      errors.push({ nodeId: rule.id, message: 'From value must be less than or equal to To value' })
+    }
+    if (field.type === 'date' && new Date(String(a)) > new Date(String(b))) {
+      errors.push({ nodeId: rule.id, message: 'Start date must be before end date' })
     }
     return errors
   }

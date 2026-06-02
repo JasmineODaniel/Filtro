@@ -10,8 +10,8 @@
   --border-strong: #111111;
   --border-subtle: #ebebeb;
   --text-primary: #111111;
-  --text-secondary: #555555;
-  --text-muted: #999999;
+  --text-secondary: #2a2a2a;
+  --text-muted: #444444;
   --accent: #c8ff00;
   --accent-hover: #b8ef00;
   --accent-text: #111111;
@@ -110,12 +110,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: #1a1a1a;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: #111111;
 }
 
 code, pre, .mono {
