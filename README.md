@@ -1,6 +1,6 @@
 # Filtro
 
-A visual query builder for constructing complex, nested filter conditions — with live SQL, MongoDB, and GraphQL preview, mock data execution, and animated UI.
+A visual query builder for constructing complex, nested filter conditions — with live SQL, MongoDB, and GraphQL preview, mock data execution, animated UI, and a responsive mobile experience.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
@@ -8,18 +8,28 @@ A visual query builder for constructing complex, nested filter conditions — wi
 ![Zustand](https://img.shields.io/badge/Zustand-5-FF6B35)
 ![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-0055FF)
 
+## Routes
+
+| Route | Description |
+|---|---|
+| `/` | Landing page — hero, features, animated step connector, mock UI preview |
+| `/builder` | The query builder application |
+
 ## Features
 
 - **Visual query builder** — add, remove, reorder (drag-and-drop) rules and nested groups
 - **AND / OR logic** — toggle per-group, with inline connector labels between conditions
 - **Field-aware operators** — operators adapt to field type (string, number, date, enum, boolean)
+- **Between validation** — reversed ranges (e.g. 35–20) are caught and flagged before execution
 - **Live preview** — SQL `WHERE`, MongoDB aggregation, and GraphQL `where` generated in real time
-- **Mock execution** — run queries against realistic in-memory datasets and paginate results
-- **Query history** — every run is snapshotted; browse and restore past states
-- **Presets** — save named queries, load or delete them from the sidebar
-- **Import / Export** — queries round-trip as validated JSON
-- **Keyboard shortcuts** — `Ctrl+Enter` run, `Ctrl+S` save preset, `Ctrl+R` reset, `Ctrl+E` export, `Ctrl+I` import
-- **Dark / light theme** — CSS custom properties; toggle persisted to localStorage
+- **Syntax highlighting** — keywords, values, and operators coloured via CSS design tokens
+- **Mock execution** — run queries against 50 users, 30 orders, 25 products; sortable paginated results
+- **Query history** — auto-snapshotted on change (deduped) and on execute; schema is saved with each entry
+- **Presets** — save named queries with schema context; loading a preset restores the correct schema automatically
+- **Import / Export** — queries round-trip as validated JSON; size and structure guarded on import
+- **Keyboard shortcuts** — `Ctrl+S` save preset, `Ctrl+R` reset, `Ctrl+E` export, `Ctrl+I` import
+- **Mobile responsive** — hamburger drawer with schema selector, History and Presets sub-panels; three-tab layout (Builder / Preview / Results)
+- **Dark / light theme** — CSS custom properties; toggle persisted to localStorage; flash-free on load
 - **Animated UI** — Framer Motion stagger, slide, and scale transitions throughout
 
 ## Tech Stack
@@ -65,130 +75,105 @@ QueryTree
 
 `QueryGroup` and `QueryRule` are discriminated by `type: 'rule' | 'group'`. The tree can nest arbitrarily deep.
 
-### Recursive Rendering
-
-`QueryGroup` renders itself recursively — each child that is a group mounts another `QueryGroupComponent` with `depth + 1`. Depth drives the color accent on the left border and connector lines. `React.memo` prevents subtree re-renders when siblings change.
-
-```
-<QueryGroupComponent depth={0}>        ← root (accent: charcoal)
-  <QueryRuleComponent />
-  <QueryGroupComponent depth={1}>      ← nested (accent: blue)
-    <QueryRuleComponent />
-    <QueryRuleComponent />
-  </QueryGroupComponent>
-</QueryGroupComponent>
-```
-
 ### State Management
 
-All query state lives in a single Zustand store (`src/store/query-store.ts`). Tree mutations use pure recursive helpers that return new objects — no mutation in place:
+All query state lives in a single Zustand store (`src/store/query-store.ts`). Tree mutations use pure recursive helpers — no mutation in place.
 
-| Helper | What it does |
-|---|---|
-| `updateNodeInGroup` | DFS-walks the tree and replaces the matching node |
-| `removeNodeFromGroup` | Filters the matching id out at any depth |
-| `addNodeToGroup` | Appends a child node to the matching parent group |
-| `reorderInGroup` | Swaps two indices inside the matching group |
-
-The store also manages: `schema`, `previewMode`, `validationErrors`, `history[]`, `presets[]`, `theme`.
+The store manages: `tree`, `schema`, `previewMode`, `validationErrors`, `history[]` (max 50, deduped), `presets[]`, `theme`. Both history entries and presets persist `schemaId` so loading them restores the correct schema.
 
 ### Query Engine
 
-`src/engine/executor.ts` evaluates a `QueryTree` against an array of plain objects. It mirrors the builder's operator set exactly:
+`src/engine/executor.ts` evaluates a `QueryTree` against an array of plain objects:
 
-- **Groups**: recursively evaluate children, then reduce with `&&` (AND) or `||` (OR)
-- **Rules**: dispatch on `operator` — string ops use `includes`/`startsWith`/`endsWith`/`RegExp`; number ops use arithmetic comparison; date ops use `Date.getTime()` for timestamp comparison; `between` receives a `[a, b]` tuple and checks inclusive range for both numbers and dates
+- **Empty groups** return `false` (no records) rather than matching everything
+- **Groups** reduce children with `&&` (AND) or `||` (OR)
+- **Rules** dispatch on `operator` — string, number, date, enum, boolean, regex all handled
+- **`between`** accepts a `[a, b]` tuple; tries date parsing first, falls back to numeric comparison
 
 ### Query Generators
 
-`src/utils/query-generator.ts` exposes three format generators, all derived from the same `QueryTree`:
-
-| Export | Output format |
+| Export | Output |
 |---|---|
 | `generateSQL` | `WHERE (field = 'val' AND ...)` |
-| `generateMongo` | `{ $and: [{ field: { $eq: 'val' } }, ...] }` |
+| `generateMongo` | `{ $and: [{ field: { $eq: 'val' } }] }` |
 | `generateGraphQL` | Prisma-style `where: { AND: [{ field: { equals: "val" } }] }` |
-
-Each is a recursive function over `QueryNode`; base case is a `QueryRule`, recursive case wraps children in the appropriate AND/OR construct.
 
 ### Component Structure
 
 ```
 src/
 ├── app/
-│   ├── layout.tsx          theme provider, CSS vars, keyboard shortcuts
-│   └── page.tsx            three-column shell (sidebar | builder | preview+results)
+│   ├── layout.tsx            fonts, theme init script, CSS vars
+│   ├── page.tsx              landing page (always dark, CSS var tokens)
+│   ├── builder/page.tsx      query builder shell
+│   └── icon.tsx              dynamic favicon
 ├── components/
 │   ├── builder/
-│   │   ├── Toolbar.tsx     header: schema tabs, reset/export/import/save, run
-│   │   ├── QueryBuilder.tsx root group mount + sidebar toggle
-│   │   ├── QueryGroup.tsx  recursive group renderer + DnD context
-│   │   ├── QueryRule.tsx   single rule row (field / operator / value chips)
-│   │   ├── Sidebar.tsx     history + presets panel
+│   │   ├── Toolbar.tsx       header: schema tabs, actions, mobile hamburger drawer
+│   │   ├── QueryBuilder.tsx  root mount, mobile tab layout
+│   │   ├── QueryGroup.tsx    recursive group renderer + DnD context
+│   │   ├── QueryRule.tsx     single rule row (field / operator / value)
+│   │   ├── Sidebar.tsx       desktop sidebar: history + presets + theme toggle
 │   │   ├── HistoryPanel.tsx
 │   │   └── PresetsPanel.tsx
 │   ├── preview/
-│   │   └── QueryPreview.tsx  syntax-highlighted code preview, mode toggle
+│   │   └── QueryPreview.tsx  syntax-highlighted preview, mode toggle (SQL/Mongo/GQL)
 │   ├── simulator/
-│   │   └── ResultsPanel.tsx  execute, paginate, sort results table
+│   │   └── ResultsPanel.tsx  execute, sort, paginate results table
 │   └── ui/
-│       ├── Card.tsx         Card / CardHeader / CardBody
-│       ├── Chip.tsx         ChipSelect (portal dropdown), ChipInput
-│       ├── Button.tsx       variant=primary|accent|icon|danger
-│       ├── Badge.tsx        variant=accent|muted|depth
-│       ├── Icon.tsx         lucide icon wrapper
+│       ├── Card.tsx          Card / CardHeader / CardBody
+│       ├── Chip.tsx          ChipSelect (portal dropdown), ChipInput
+│       ├── Button.tsx        variant=primary|accent|icon|danger
+│       ├── Badge.tsx         variant=accent|muted|depth
+│       ├── Icon.tsx          lucide icon wrapper
+│       ├── FiltroLogo.tsx    FILTRO wordmark component
 │       ├── ConnectorLine.tsx AND/OR label between rules
-│       └── Animated.tsx     AnimatedItem, AnimatedCollapse, StaggeredRow, OperatorToggle
+│       └── Animated.tsx      AnimatedItem, AnimatedCollapse, StaggeredRow, OperatorToggle
 ├── engine/
-│   └── executor.ts         in-memory query evaluation
+│   └── executor.ts           in-memory query evaluation
+├── hooks/
+│   ├── useIsMobile.ts        768px breakpoint resize listener
+│   ├── useAnimation.ts       shared Framer Motion transition tokens
+│   ├── useHover.ts           hover state hook
+│   └── useKeyboardShortcuts.ts
 ├── store/
-│   └── query-store.ts      Zustand store (single source of truth)
+│   └── query-store.ts        Zustand store (single source of truth)
 ├── types/
-│   ├── query.ts            QueryTree, QueryGroup, QueryRule, operators, ...
-│   └── schema.ts           Schema definitions (Users, Orders, Products)
+│   ├── query.ts              QueryTree, QueryGroup, QueryRule, operators, schema types
+│   └── schema.ts             USERS_SCHEMA, ORDERS_SCHEMA, PRODUCTS_SCHEMA
 ├── utils/
-│   ├── query-generator.ts  SQL / MongoDB / GraphQL output
-│   ├── validator.ts        tree validation (empty fields, missing values)
-│   ├── operators.ts        operator label maps per field type
-│   ├── sanitize.ts         import validation + size guard
-│   └── ids.ts              nanoid wrapper
+│   ├── query-generator.ts    SQL / MongoDB / GraphQL output
+│   ├── validator.ts          tree validation including reversed between ranges
+│   ├── operators.ts          operator label maps and type guards per field type
+│   ├── sanitize.ts           import validation + size guard (512 KB max)
+│   └── ids.ts                nanoid wrapper
 └── schemas/
-    └── mock-data.ts        realistic mock datasets for each schema
+    └── mock-data.ts          50 users, 30 orders, 25 products
 ```
-
-### Animation System
-
-Animations use shared variants from `src/hooks/useAnimation.ts` and components in `src/components/ui/Animated.tsx`:
-
-- `AnimatedItem` — wraps any element with a named variant (`fadeIn`, `slideDown`, `scaleIn`)
-- `AnimatedCollapse` — height-based collapse using `AnimatePresence` + `initial/animate/exit`
-- `StaggeredRow` — table rows that fan in sequentially via `staggerChildren`
-- `OperatorToggle` — AND/OR pill with layout animation on label swap
-
-Transition tokens (`smooth`, `snappy`, `bouncy`) are defined once and shared everywhere.
-
-### Custom Dropdown (ChipSelect)
-
-Native `<select>` can't be styled and gets clipped by `overflow: hidden` on Card. `ChipSelect` replaces it with:
-
-1. A styled button trigger that reads `<option>` children at render time
-2. A portal dropdown (`createPortal → document.body`) positioned with `getBoundingClientRect` + `position: fixed`
-3. Auto-flip: if not enough viewport below the trigger, the list opens upward
-4. Click-outside and Escape key close it; SSR-safe via `useState(false)` mount guard
 
 ### Theming
 
-CSS custom properties on `:root` (light) and `.dark` (dark). Key tokens:
+CSS custom properties on `:root` (light) and `.dark` (dark). Key design tokens:
 
 | Token | Purpose |
 |---|---|
 | `--bg` / `--surface` / `--bg-secondary` | layered backgrounds |
-| `--card-header-bg` | card header — darker than surface in both modes |
-| `--accent` / `--accent-text` | primary action color (lime green) |
+| `--card-header-bg` / `--card-header-text` | card header — always dark bg, light text |
+| `--accent` / `--accent-text` | primary action color (lime `#c8ff00`) |
+| `--preview-bg` / `--preview-text` | code preview — always dark |
+| `--syntax-keyword` / `--syntax-value` / `--syntax-operator` | syntax highlighting — mint in light, neon in dark |
+| `--table-header-bg` / `--table-header-text` | results table header |
 | `--border` / `--border-strong` | subtle / prominent dividers |
-| `--text-primary` / `--text-muted` | typography hierarchy |
-| `--destructive` / `--destructive-bg` | error + danger states |
-| `--shadow` / `--shadow-md` / `--shadow-lg` | elevation |
+| `--text-primary` / `--text-secondary` / `--text-muted` | typography hierarchy |
+
+### Mobile
+
+`useIsMobile` (768px breakpoint) drives two distinct layouts:
+
+- **Desktop**: 56px sidebar icon rail (history, presets, theme) + toolbar with schema tabs
+- **Mobile**: sidebar hidden; toolbar shows FILTRO wordmark + theme toggle (top row) and hamburger + action buttons (bottom row); builder/preview/results switch via tabs
+
+The hamburger drawer contains the schema selector (2-column grid), and History / Presets as navigable sub-panels.
 
 ## Testing
 
@@ -196,27 +181,27 @@ CSS custom properties on `:root` (light) and `.dark` (dark). Key tokens:
 npm test
 ```
 
-Four test suites covering the pure-logic layers:
-
 | Suite | What is tested |
 |---|---|
-| `executor.test.ts` | AND/OR evaluation, all operator types, nested groups |
+| `executor.test.ts` | AND/OR evaluation, all operator types, nested groups, empty group returns false |
 | `operators.test.ts` | operator label lookup per field type |
-| `query-generator.test.ts` | SQL, MongoDB, GraphQL output for rules and groups |
-| `validator.test.ts` | empty field, empty operator, missing value detection |
+| `query-generator.test.ts` | SQL, MongoDB, GraphQL output |
+| `validator.test.ts` | empty field, missing value, reversed between range detection |
 
 ## Schemas
 
-Three built-in schemas, switchable from the toolbar:
+| Schema | Records | Key Fields |
+|---|---|---|
+| **Users** | 50 | id, name, email, age, country, status, verified, createdAt, purchases |
+| **Orders** | 30 | id, customerId, total, status, quantity, region, priority, createdAt |
+| **Products** | 25 | id, name, price, category, inStock, rating, createdAt |
 
-| Schema | Fields |
+## Sample Complex Queries
+
+| Query | Expected results |
 |---|---|
-| **Users** | id, name, email, age, status, verified, createdAt |
-| **Orders** | id, userId, amount, status, product, quantity, createdAt |
-| **Products** | id, name, category, price, stock, active, updatedAt |
-
-Each schema has a corresponding mock dataset in `src/schemas/mock-data.ts`.
-
-## Project Status
-
-Built as a submission project. All features complete and TypeScript-clean (`tsc --noEmit` passes).
+| `status = active AND purchases > 15 AND verified = true` | 15+ users (triggers pagination) |
+| `age between 25 35 AND country contains Nigeria` | Amara, Chioma, Emmanuel, Seun, Tolu |
+| `category in [electronics, books] AND price < 100 AND inStock = true` | Multiple products |
+| `total > 1000 AND status in [delivered, shipped] AND priority = true` | High-value priority orders |
+| `createdAt before 2024-01-01 AND purchases > 20` | Power users from 2023 |

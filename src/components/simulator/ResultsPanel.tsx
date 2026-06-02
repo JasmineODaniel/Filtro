@@ -163,7 +163,7 @@ function ResultsPanel() {
               fontFamily: 'var(--font-sans)',
             }}>
               <thead>
-                <tr style={{ backgroundColor: '#2d2d2d' }}>
+                <tr style={{ backgroundColor: 'var(--table-header-bg)' }}>
                   {columns.map(col => (
                     <th
                       key={col}
@@ -173,7 +173,7 @@ function ResultsPanel() {
                         textAlign: 'left',
                         fontSize: '10px',
                         fontWeight: 600,
-                        color: '#ffffff',
+                        color: 'var(--table-header-text)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.06em',
                         cursor: 'pointer',
