@@ -12,7 +12,7 @@ export default function LandingPage() {
     }}>
 
       {/* NAV */}
-      <nav style={{
+      <nav className="lp-nav" style={{
         position: 'fixed',
         top: 0,
         left: 0,
@@ -21,7 +21,6 @@ export default function LandingPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 40px',
         height: '60px',
         backgroundColor: 'rgba(14,14,14,0.85)',
         backdropFilter: 'blur(12px)',
@@ -98,9 +97,8 @@ export default function LandingPage() {
           marginBottom: '24px',
           maxWidth: '900px',
         }}>
-          Build filters.
-          <br />
-          <span style={{ color: '#c8ff00' }}>Without code.</span>
+          <span className="lp-hero-l1">Build filters.</span>
+          <span className="lp-hero-l2" style={{ color: '#c8ff00' }}>Without code.</span>
         </h1>
 
         <p style={{
@@ -274,46 +272,50 @@ export default function LandingPage() {
             Three steps to your filter
           </h2>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '40px',
-          }}>
-            {[
-              { step: '01', title: 'Pick a schema', body: 'Choose Users, Products or Orders. Each schema has its own fields and data types. The whole builder adapts instantly.' },
-              { step: '02', title: 'Build your filter', body: 'Add rules. Pick a field, pick an operator, set a value. Nest groups for AND/OR logic. Drag to reorder.' },
-              { step: '03', title: 'Execute & read results', body: 'Hit Execute. Your filter runs against the mock dataset and matching records appear in a sortable table.' },
-            ].map(s => (
-              <div key={s.step} style={{ textAlign: 'left' }}>
-                <div style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '40px',
-                  fontWeight: 400,
-                  color: '#c8ff00',
-                  opacity: 0.4,
-                  letterSpacing: '0.06em',
-                  marginBottom: '16px',
-                  lineHeight: 1,
-                }}>
-                  {s.step}
-                </div>
-                <h3 style={{
-                  fontSize: '15px',
-                  fontWeight: 600,
-                  color: '#f0f0f0',
-                  marginBottom: '10px',
-                }}>
-                  {s.title}
-                </h3>
-                <p style={{
-                  fontSize: '13px',
-                  color: '#666',
-                  lineHeight: 1.7,
-                }}>
-                  {s.body}
-                </p>
-              </div>
-            ))}
+          <div className="lp-steps-grid">
+
+            {/* SVG connector — ball rolls 01 → 02 → 03 in zigzag */}
+            {/* viewBox 720×500: col2 center x≈520, col1 center x≈40, row midpoints y≈107,281 */}
+            <svg className="lp-connector" viewBox="0 0 720 500" preserveAspectRatio="xMidYMid meet">
+              <path
+                d="M 520,22 L 520,107 L 40,107 L 40,194 L 40,281 L 520,281 L 520,368"
+                stroke="#2a2a2a"
+                strokeWidth="2"
+                fill="none"
+                strokeLinecap="square"
+                strokeLinejoin="miter"
+              />
+              <circle r="6" fill="#c8ff00" style={{ filter: 'drop-shadow(0 0 5px #c8ff00)' }}>
+                <animateMotion
+                  path="M 520,22 L 520,107 L 40,107 L 40,194 L 40,281 L 520,281 L 520,368"
+                  dur="3s"
+                  repeatCount="indefinite"
+                  calcMode="linear"
+                />
+              </circle>
+            </svg>
+
+            {/* 01 — right column */}
+            <div className="lp-step-right" style={{ minHeight: '150px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '40px', fontWeight: 400, color: '#c8ff00', opacity: 0.4, letterSpacing: '0.06em', marginBottom: '14px', lineHeight: 1 }}>01</div>
+              <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#f0f0f0', marginBottom: '10px' }}>Pick a schema</h3>
+              <p style={{ fontSize: '13px', color: '#666', lineHeight: 1.7 }}>Choose Users, Products or Orders. Each schema has its own fields and data types. The whole builder adapts instantly.</p>
+            </div>
+
+            {/* 02 — left column */}
+            <div className="lp-step-left" style={{ minHeight: '150px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '40px', fontWeight: 400, color: '#c8ff00', opacity: 0.4, letterSpacing: '0.06em', marginBottom: '14px', lineHeight: 1 }}>02</div>
+              <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#f0f0f0', marginBottom: '10px' }}>Build your filter</h3>
+              <p style={{ fontSize: '13px', color: '#666', lineHeight: 1.7 }}>Add rules. Pick a field, pick an operator, set a value. Nest groups for AND/OR logic. Drag to reorder.</p>
+            </div>
+
+            {/* 03 — right column */}
+            <div className="lp-step-right" style={{ minHeight: '150px' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '40px', fontWeight: 400, color: '#c8ff00', opacity: 0.4, letterSpacing: '0.06em', marginBottom: '14px', lineHeight: 1 }}>03</div>
+              <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#f0f0f0', marginBottom: '10px' }}>Execute &amp; read results</h3>
+              <p style={{ fontSize: '13px', color: '#666', lineHeight: 1.7 }}>Hit Execute. Your filter runs against the mock dataset and matching records appear in a sortable, paginated table.</p>
+            </div>
+
           </div>
         </div>
       </section>
@@ -498,7 +500,7 @@ export default function LandingPage() {
           Visual query builder — no code required
         </span>
         <span style={{ fontSize: '12px', color: '#444' }}>
-          Filtro 2026
+          © Filtro 2026
         </span>
       </footer>
 
