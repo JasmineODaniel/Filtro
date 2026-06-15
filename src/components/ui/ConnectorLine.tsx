@@ -1,5 +1,7 @@
 'use client'
 
+import { OperatorToggle } from './OperatorToggle'
+
 interface ConnectorLineProps {
   operator: 'AND' | 'OR'
   depthColor: string
@@ -13,7 +15,7 @@ export function ConnectorLine({ operator, depthColor, onToggle }: ConnectorLineP
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
-        paddingLeft: '20px',
+        paddingLeft: 'var(--space-5)',
         margin: '0',
         position: 'relative',
       }}
@@ -23,11 +25,10 @@ export function ConnectorLine({ operator, depthColor, onToggle }: ConnectorLineP
           width: '1px',
           height: '10px',
           backgroundColor: 'var(--border)',
-          marginLeft: '0',
         }}
       />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
         <div
           style={{
             width: '6px',
@@ -37,26 +38,7 @@ export function ConnectorLine({ operator, depthColor, onToggle }: ConnectorLineP
             flexShrink: 0,
           }}
         />
-        <button
-          onClick={onToggle}
-          aria-label={`Toggle operator. Currently ${operator}`}
-          style={{
-            padding: '2px 8px',
-            borderRadius: '20px',
-            border: `1.5px solid ${depthColor}`,
-            backgroundColor: 'var(--accent)',
-            color: 'var(--accent-text)',
-            fontSize: '10px',
-            fontWeight: 700,
-            fontFamily: 'var(--font-sans)',
-            cursor: 'pointer',
-            letterSpacing: '0.06em',
-            transition: 'all 0.15s ease',
-            lineHeight: 1,
-          }}
-        >
-          {operator}
-        </button>
+        <OperatorToggle value={operator} onToggle={onToggle} borderColor={depthColor} />
       </div>
 
       <div
@@ -64,7 +46,6 @@ export function ConnectorLine({ operator, depthColor, onToggle }: ConnectorLineP
           width: '1px',
           height: '10px',
           backgroundColor: 'var(--border)',
-          marginLeft: '0',
         }}
       />
     </div>
