@@ -178,7 +178,7 @@ function QueryRuleComponent({ rule }: Props) {
           type="date"
           value={String(rule.value ?? '')}
           onChange={e => updateRule(rule.id, { value: e.target.value })}
-          style={{ width: '150px' }}
+          style={{ width: '170px' }}
           aria-label="Date value"
           error={!!error}
           aria-describedby={error ? errorId : undefined}
@@ -277,7 +277,7 @@ function QueryRuleComponent({ rule }: Props) {
               hasIcon={!!selectedField}
               aria-label="Select field"
               error={!!error}
-              style={isMobile ? { width: '100%', minWidth: 0 } : { minWidth: '140px' }}
+              style={isMobile ? { width: '100%', minWidth: 0 } : { minWidth: '160px' }}
             >
               <option value="">Field...</option>
               {schema.fields.map(f => <option key={f.name} value={f.name}>{f.label}</option>)}
@@ -291,7 +291,7 @@ function QueryRuleComponent({ rule }: Props) {
             aria-label="Select operator"
             style={isMobile
               ? { flex: 1, minWidth: 0, opacity: !selectedField ? 0.4 : 1 }
-              : { minWidth: '130px', opacity: !selectedField ? 0.4 : 1 }
+              : { minWidth: '150px', opacity: !selectedField ? 0.4 : 1 }
             }
           >
             {operators.map(op => <option key={op} value={op}>{OPERATOR_LABELS[op]}</option>)}

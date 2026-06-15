@@ -5,7 +5,7 @@ export default function LoadingScreen() {
     <div style={{
       position: 'fixed',
       inset: 0,
-      backgroundColor: '#0e0e0e',
+      backgroundColor: 'var(--preview-bg)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

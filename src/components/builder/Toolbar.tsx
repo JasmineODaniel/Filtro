@@ -366,7 +366,7 @@ export default function Toolbar() {
       {isMobile && drawerOpen && (
         <>
           <div
-            style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'rgba(0,0,0,0.5)' }}
+            style={{ position: 'fixed', inset: 0, zIndex: 200, backgroundColor: 'var(--overlay-bg)' }}
             onClick={closeDrawer}
             aria-hidden="true"
           />
