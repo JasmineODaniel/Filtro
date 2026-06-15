@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 interface OperatorToggleProps {
   value: 'AND' | 'OR'
   onToggle: () => void
@@ -21,17 +23,10 @@ const segmentStyle: React.CSSProperties = {
 
 export function OperatorToggle({ value, onToggle, borderColor }: OperatorToggleProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexShrink: 0,
-        borderRadius: 'var(--radius-pill)',
-        overflow: 'hidden',
-        border: `1px solid ${borderColor ?? 'var(--border)'}`,
-      }}
-    >
+    <div style={{ display: 'flex', flexShrink: 0, borderRadius: 'var(--radius-pill)', overflow: 'hidden', border: `1px solid ${borderColor ?? 'var(--border)'}` }}>
       {OPERATORS.map(op => (
         <button
+          type="button"
           key={op}
           onClick={() => value !== op && onToggle()}
           aria-label={`Set operator to ${op}`}
