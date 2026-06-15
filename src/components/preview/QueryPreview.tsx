@@ -105,15 +105,15 @@ function QueryPreview() {
       </div>
       <pre
         style={{
-          padding: '14px',
+          padding: '18px',
           fontSize: '11px',
-          lineHeight: '1.8',
+          lineHeight: '2',
           fontFamily: 'var(--font-mono)',
           color: 'var(--preview-text)',
           backgroundColor: 'var(--preview-bg)',
           overflowX: 'auto',
           overflowY: 'auto',
-          maxHeight: '200px',
+          maxHeight: '260px',
           margin: 0,
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',

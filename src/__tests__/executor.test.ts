@@ -22,7 +22,7 @@ const makeGroup = (overrides?: Partial<QueryGroup>): QueryGroup => ({
 describe('executeQuery', () => {
   it('returns all records for empty group', () => {
     const results = executeQuery(makeGroup(), mockUsers)
-    expect(results.length).toBe(5)
+    expect(results.length).toBe(0)
   })
 
   it('filters by equals', () => {

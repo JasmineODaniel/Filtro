@@ -169,14 +169,14 @@ export default function QueryBuilder() {
             <aside
               aria-label="Query preview and results"
               style={{
-                width: '360px',
+                width: '460px',
                 borderLeft: '1px solid var(--border)',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
                 backgroundColor: 'var(--surface)',
                 flexShrink: 0,
-                boxShadow: '-2px 0 8px rgba(0,0,0,0.04)',
+                boxShadow: 'var(--shadow-side)',
               }}
             >
               <QueryPreview />
