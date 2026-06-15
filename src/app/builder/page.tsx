@@ -13,7 +13,7 @@ export default function BuilderPage() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    const timer = setTimeout(() => setReady(true), 4000)
+    const timer = setTimeout(() => setReady(true), 15000)
     return () => clearTimeout(timer)
   }, [])
 

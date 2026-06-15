@@ -43,7 +43,7 @@ const baseChipStyle: React.CSSProperties = {
 }
 
 export const ChipSelect = forwardRef<HTMLDivElement, ChipSelectProps>(
-  ({ hasIcon, error, style, children, value, onChange, disabled, 'aria-label': ariaLabel }, ref) => {
+  ({ hasIcon, error, style, children, value, onChange, disabled, 'aria-label': ariaLabel, ...props }, ref) => {
     const [isOpen, setIsOpen] = useState(false)
     const [dropStyle, setDropStyle] = useState<React.CSSProperties>({})
     const [mounted, setMounted] = useState(false)
@@ -120,6 +120,7 @@ export const ChipSelect = forwardRef<HTMLDivElement, ChipSelectProps>(
           aria-expanded={isOpen}
           aria-invalid={error ? 'true' : 'false'}
           aria-label={ariaLabel}
+          {...props}
           style={{
             ...baseChipStyle,
             paddingLeft: hasIcon ? '26px' : '10px',
