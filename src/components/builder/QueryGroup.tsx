@@ -5,6 +5,13 @@ import { useQueryStore } from '@/store'
 import { QueryGroup as QueryGroupType, QueryNode } from '@/types'
 import { ChevronDown, ChevronRight, Plus, FolderPlus, Trash2 } from 'lucide-react'
 import QueryRuleComponent from './QueryRule'
+<<<<<<< Updated upstream
+=======
+import { Button } from '@/components/ui/Button'
+import { Card, CardHeader, CardBody } from '@/components/ui/Card'
+import { ConnectorLine } from '@/components/ui/ConnectorLine'
+import { OperatorToggle } from '@/components/ui/OperatorToggle'
+>>>>>>> Stashed changes
 import {
   DndContext,
   closestCenter,
@@ -119,6 +126,7 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
             }}
           />
 
+<<<<<<< Updated upstream
           <button
             onClick={() => toggleGroupOperator(group.id)}
             style={{
@@ -138,6 +146,12 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
           >
             {group.operator}
           </button>
+=======
+          <OperatorToggle
+            value={group.operator}
+            onToggle={() => toggleGroupOperator(group.id)}
+          />
+>>>>>>> Stashed changes
 
           <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
             {group.children.length} condition{group.children.length !== 1 ? 's' : ''}
