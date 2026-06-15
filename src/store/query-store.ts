@@ -23,14 +23,17 @@ const createDefaultTree = (): QueryTree => ({
   root: createDefaultGroup(),
 })
 
-const updateNodeInGroup = (group: QueryGroup, nodeId: string, updater: (node: QueryNode) => QueryNode): QueryGroup => ({
-  ...group,
-  children: group.children.map(child => {
-    if (child.id === nodeId) return updater(child) as QueryNode
-    if (child.type === 'group') return updateNodeInGroup(child, nodeId, updater)
-    return child
-  }),
-})
+const updateNodeInGroup = (group: QueryGroup, nodeId: string, updater: (node: QueryNode) => QueryNode): QueryGroup => {
+  if (group.id === nodeId) return updater(group) as QueryGroup
+  return {
+    ...group,
+    children: group.children.map(child => {
+      if (child.id === nodeId) return updater(child) as QueryNode
+      if (child.type === 'group') return updateNodeInGroup(child, nodeId, updater)
+      return child
+    }),
+  }
+}
 
 const removeNodeFromGroup = (group: QueryGroup, nodeId: string): QueryGroup => ({
   ...group,
@@ -74,7 +77,7 @@ interface QueryStore {
   presets: QueryPreset[]
   history: QueryHistoryEntry[]
   activePresetId: string | null
-  previewMode: 'sql' | 'mongo'
+  previewMode: 'sql' | 'mongo' | 'graphql'
   theme: 'light' | 'dark'
 
   setSchema: (schema: Schema) => void
@@ -93,7 +96,7 @@ interface QueryStore {
   pushHistory: () => void
   loadHistory: (entryId: string) => void
   clearHistory: () => void
-  setPreviewMode: (mode: 'sql' | 'mongo') => void
+  setPreviewMode: (mode: 'sql' | 'mongo' | 'graphql') => void
   toggleTheme: () => void
   importTree: (tree: QueryTree) => void
 }
@@ -175,11 +178,12 @@ export const useQueryStore = create<QueryStore>((set, get) => ({
   },
 
   savePreset: (name: string) => {
-    const { tree } = get()
+    const { tree, schema } = get()
     const preset: QueryPreset = {
       id: generateId(),
       name,
       tree: JSON.parse(JSON.stringify(tree)),
+      schemaId: schema.id,
       createdAt: new Date().toISOString(),
     }
     set((state: QueryStore) => ({ presets: [...state.presets, preset], activePresetId: preset.id }))
@@ -188,7 +192,9 @@ export const useQueryStore = create<QueryStore>((set, get) => ({
   loadPreset: (presetId: string) => {
     const { presets } = get()
     const preset = presets.find((p: QueryPreset) => p.id === presetId)
-    if (preset) set({ tree: JSON.parse(JSON.stringify(preset.tree)), activePresetId: presetId, validationErrors: [] })
+    if (!preset) return
+    const schema = ALL_SCHEMAS.find(s => s.id === preset.schemaId) ?? ALL_SCHEMAS[0]
+    set({ tree: JSON.parse(JSON.stringify(preset.tree)), schema, activePresetId: presetId, validationErrors: [] })
   },
 
   deletePreset: (presetId: string) => {
@@ -199,10 +205,13 @@ export const useQueryStore = create<QueryStore>((set, get) => ({
   },
 
   pushHistory: () => {
-    const { tree } = get()
+    const { tree, schema, history } = get()
+    const serialized = JSON.stringify(tree)
+    if (history.length > 0 && JSON.stringify(history[0].tree) === serialized) return
     const entry: QueryHistoryEntry = {
       id: generateId(),
-      tree: JSON.parse(JSON.stringify(tree)),
+      tree: JSON.parse(serialized),
+      schemaId: schema.id,
       timestamp: new Date().toISOString(),
     }
     set((state: QueryStore) => ({ history: [entry, ...state.history].slice(0, 50) }))
@@ -211,14 +220,23 @@ export const useQueryStore = create<QueryStore>((set, get) => ({
   loadHistory: (entryId: string) => {
     const { history } = get()
     const entry = history.find((h: QueryHistoryEntry) => h.id === entryId)
-    if (entry) set({ tree: JSON.parse(JSON.stringify(entry.tree)), validationErrors: [] })
+    if (!entry) return
+    const schema = ALL_SCHEMAS.find(s => s.id === entry.schemaId) ?? ALL_SCHEMAS[0]
+    set({ tree: JSON.parse(JSON.stringify(entry.tree)), schema, validationErrors: [] })
   },
 
   clearHistory: () => set({ history: [] }),
 
-  setPreviewMode: (mode: 'sql' | 'mongo') => set({ previewMode: mode }),
+  setPreviewMode: (mode: 'sql' | 'mongo' | 'graphql') => set({ previewMode: mode }),
 
-  toggleTheme: () => set((state: QueryStore) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
+  toggleTheme: () => set((state: QueryStore) => {
+    const next = state.theme === 'dark' ? 'light' : 'dark'
+    try {
+      localStorage.setItem('filtro-theme', next)
+      document.documentElement.classList.toggle('dark', next === 'dark')
+    } catch {}
+    return { theme: next }
+  }),
 
   importTree: (tree: QueryTree) => set({ tree, validationErrors: [] }),
 }))

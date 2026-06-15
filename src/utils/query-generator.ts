@@ -1,15 +1,16 @@
 import { QueryGroup, QueryNode, QueryRule, Operator } from '@/types'
+import { escapeSQLString, escapeSQLLike, escapeRegexLiteral, isSafeRegex } from './sanitize'
 
 const formatValue = (value: unknown, operator: Operator): string => {
   if (operator === 'is_empty' || operator === 'is_not_empty') return ''
   if (operator === 'in_array' || operator === 'not_in_array') {
-    return `(${(value as string[]).join(', ')})`
+    return `(${(value as string[]).map(v => `'${escapeSQLString(String(v))}'`).join(', ')})`
   }
   if (operator === 'between') {
     const [a, b] = value as [unknown, unknown]
     return `${a} AND ${b}`
   }
-  if (typeof value === 'string') return `'${value}'`
+  if (typeof value === 'string') return `'${escapeSQLString(value)}'`
   return String(value)
 }
 
@@ -43,13 +44,13 @@ const ruleToSQL = (rule: QueryRule): string => {
     return `${rule.field} ${op}`
   }
   if (rule.operator === 'contains' || rule.operator === 'not_contains') {
-    return `${rule.field} ${op} '%${rule.value}%'`
+    return `${rule.field} ${op} '%${escapeSQLLike(rule.value as string)}%'`
   }
   if (rule.operator === 'starts_with') {
-    return `${rule.field} ${op} '${rule.value}%'`
+    return `${rule.field} ${op} '${escapeSQLLike(rule.value as string)}%'`
   }
   if (rule.operator === 'ends_with') {
-    return `${rule.field} ${op} '%${rule.value}'`
+    return `${rule.field} ${op} '%${escapeSQLLike(rule.value as string)}'`
   }
   return `${rule.field} ${op} ${formatValue(rule.value, rule.operator)}`
 }
@@ -96,11 +97,14 @@ const operatorToMongo = (operator: Operator): string => {
 const ruleToMongo = (rule: QueryRule): object => {
   if (rule.operator === 'is_empty') return { [rule.field]: { $in: [null, ''] } }
   if (rule.operator === 'is_not_empty') return { [rule.field]: { $nin: [null, ''] } }
-  if (rule.operator === 'contains') return { [rule.field]: { $regex: rule.value, $options: 'i' } }
-  if (rule.operator === 'not_contains') return { [rule.field]: { $not: { $regex: rule.value } } }
-  if (rule.operator === 'starts_with') return { [rule.field]: { $regex: `^${rule.value}`, $options: 'i' } }
-  if (rule.operator === 'ends_with') return { [rule.field]: { $regex: `${rule.value}$`, $options: 'i' } }
-  if (rule.operator === 'regex') return { [rule.field]: { $regex: rule.value } }
+  if (rule.operator === 'contains') return { [rule.field]: { $regex: escapeRegexLiteral(rule.value as string), $options: 'i' } }
+  if (rule.operator === 'not_contains') return { [rule.field]: { $not: { $regex: escapeRegexLiteral(rule.value as string) } } }
+  if (rule.operator === 'starts_with') return { [rule.field]: { $regex: `^${escapeRegexLiteral(rule.value as string)}`, $options: 'i' } }
+  if (rule.operator === 'ends_with') return { [rule.field]: { $regex: `${escapeRegexLiteral(rule.value as string)}$`, $options: 'i' } }
+  if (rule.operator === 'regex') {
+    if (!isSafeRegex(rule.value)) return {}
+    return { [rule.field]: { $regex: rule.value } }
+  }
   if (rule.operator === 'between') {
     const [a, b] = rule.value as [unknown, unknown]
     return { [rule.field]: { $gte: a, $lte: b } }
@@ -122,4 +126,67 @@ const groupToMongo = (group: QueryGroup): object => {
 
 export const generateMongo = (group: QueryGroup): string => {
   return JSON.stringify(groupToMongo(group), null, 2)
+}
+
+// ─── GraphQL (Prisma-style WHERE filter) ──────────────────────────────────────
+
+const formatGQLValue = (value: unknown): string => {
+  if (value === null || value === undefined) return 'null'
+  if (typeof value === 'boolean') return String(value)
+  if (typeof value === 'number') return String(value)
+  return `"${escapeSQLString(String(value))}"`
+}
+
+const ruleToGQLFilter = (rule: QueryRule): string => {
+  switch (rule.operator) {
+    case 'is_empty': return 'equals: null'
+    case 'is_not_empty': return 'not: { equals: null }'
+    case 'equals': return `equals: ${formatGQLValue(rule.value)}`
+    case 'not_equals': return `not: { equals: ${formatGQLValue(rule.value)} }`
+    case 'contains': return `contains: ${formatGQLValue(rule.value)}`
+    case 'not_contains': return `not: { contains: ${formatGQLValue(rule.value)} }`
+    case 'starts_with': return `startsWith: ${formatGQLValue(rule.value)}`
+    case 'ends_with': return `endsWith: ${formatGQLValue(rule.value)}`
+    case 'greater_than': case 'after': return `gt: ${formatGQLValue(rule.value)}`
+    case 'less_than': case 'before': return `lt: ${formatGQLValue(rule.value)}`
+    case 'greater_than_or_equal': return `gte: ${formatGQLValue(rule.value)}`
+    case 'less_than_or_equal': return `lte: ${formatGQLValue(rule.value)}`
+    case 'between': {
+      const [a, b] = rule.value as [unknown, unknown]
+      return `gte: ${formatGQLValue(a)}, lte: ${formatGQLValue(b)}`
+    }
+    case 'in_array': return `in: [${(rule.value as string[]).map(formatGQLValue).join(', ')}]`
+    case 'not_in_array': return `notIn: [${(rule.value as string[]).map(formatGQLValue).join(', ')}]`
+    case 'regex': return `regex: ${formatGQLValue(rule.value)}`
+    default: return `equals: ${formatGQLValue(rule.value)}`
+  }
+}
+
+const nodeToGQL = (node: QueryNode, indent: string): string => {
+  if (node.type === 'rule') {
+    return `${indent}{ ${node.field}: { ${ruleToGQLFilter(node)} } }`
+  }
+  const childParts = node.children
+    .filter(c => c.type === 'rule' || (c.type === 'group' && c.children.length > 0))
+    .map(c => nodeToGQL(c, indent + '  '))
+  if (childParts.length === 0) return ''
+  return `${indent}{ ${node.operator}: [\n${childParts.join(',\n')}\n${indent}] }`
+}
+
+export const generateGraphQL = (group: QueryGroup, schemaName: string = 'records', fields: string[] = []): string => {
+  const childParts = group.children
+    .filter(c => c.type === 'rule' || (c.type === 'group' && c.children.length > 0))
+    .map(c => nodeToGQL(c, '        '))
+
+  const selectionFields = (fields.length > 0 ? fields : ['id']).map(f => `    ${f}`).join('\n')
+
+  if (childParts.length === 0) {
+    return `query {\n  ${schemaName} {\n${selectionFields}\n  }\n}`
+  }
+
+  const whereBody = childParts.length === 1 && childParts[0].trimStart().startsWith('{')
+    ? childParts[0]
+    : `      ${group.operator}: [\n${childParts.join(',\n')}\n      ]`
+
+  return `query {\n  ${schemaName}(\n    where: {\n${whereBody}\n    }\n  ) {\n${selectionFields}\n  }\n}`
 }
