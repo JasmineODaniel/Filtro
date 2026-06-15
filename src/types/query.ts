@@ -92,12 +92,14 @@ export interface QueryPreset {
   id: string
   name: string
   tree: QueryTree
+  schemaId: string
   createdAt: string
 }
 
 export interface QueryHistoryEntry {
   id: string
   tree: QueryTree
+  schemaId: string
   timestamp: string
   label?: string
 }

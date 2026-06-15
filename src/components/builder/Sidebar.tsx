@@ -2,138 +2,188 @@
 
 import { useState } from 'react'
 import { useQueryStore } from '@/store'
-import { History, BookmarkCheck, Sun, Moon, Filter } from 'lucide-react'
+import { useIsMobile } from '@/hooks/useIsMobile'
+import { History, BookmarkCheck, Sun, Moon } from 'lucide-react'
 import HistoryPanel from './HistoryPanel'
 import PresetsPanel from './PresetsPanel'
+import { AnimatedItem, AnimatedPresenceWrapper } from '@/components/ui/Animated'
+import { smooth } from '@/hooks/useAnimation'
 
 type Panel = 'history' | 'presets' | null
+
+interface NavItemProps {
+  icon: React.ReactNode
+  label: string
+  active: boolean
+  onClick: () => void
+}
+
+function NavItem({ icon, label, active, onClick }: NavItemProps) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      aria-label={label}
+      title={label}
+      style={{
+        width: '40px',
+        height: '40px',
+        borderRadius: 'var(--radius)',
+        border: 'none',
+        backgroundColor: active ? 'var(--accent)' : 'transparent',
+        color: active ? 'var(--accent-text)' : 'var(--text-secondary)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
+        flexShrink: 0,
+      }}
+      onMouseEnter={e => {
+        if (!active) {
+          e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
+          e.currentTarget.style.color = 'var(--text-primary)'
+        }
+      }}
+      onMouseLeave={e => {
+        if (!active) {
+          e.currentTarget.style.backgroundColor = 'transparent'
+          e.currentTarget.style.color = 'var(--text-secondary)'
+        }
+      }}
+    >
+      {icon}
+    </button>
+  )
+}
 
 export default function Sidebar() {
   const { toggleTheme, theme } = useQueryStore()
   const [activePanel, setActivePanel] = useState<Panel>(null)
+  const isMobile = useIsMobile()
+
+  if (isMobile) return null
 
   const togglePanel = (panel: Panel) => {
     setActivePanel(prev => prev === panel ? null : panel)
   }
 
   return (
-    <div style={{ display: 'flex', flexShrink: 0 }}>
-      <div
-        style={{
-          width: '56px',
-          borderRight: '1px solid var(--border)',
-          backgroundColor: 'var(--surface)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          paddingTop: '12px',
-          paddingBottom: '16px',
-          gap: '4px',
-          flexShrink: 0,
-        }}
-      >
+    <>
+      {activePanel && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 10 }}
+          onClick={() => setActivePanel(null)}
+          aria-hidden="true"
+        />
+      )}
+      <div style={{ display: 'flex', flexShrink: 0, position: 'relative', zIndex: 20 }}>
         <div
           style={{
-            width: '32px',
-            height: '32px',
-            backgroundColor: 'var(--accent)',
-            borderRadius: 'var(--radius)',
+            width: '56px',
+            borderRight: '1px solid var(--border)',
+            backgroundColor: 'var(--surface)',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '20px',
             flexShrink: 0,
+            boxShadow: 'var(--shadow)',
           }}
         >
-          <Filter size={16} color="var(--accent-text)" strokeWidth={2.5} />
-        </div>
+          <nav
+            aria-label="Sidebar navigation"
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 'var(--space-1)',
+              padding: 'var(--space-2) 0',
+              borderTop: '1px solid var(--border)',
+              width: '100%',
+              paddingLeft: '8px',
+              paddingRight: '8px',
+            }}
+          >
+            <NavItem
+              icon={<History size={16} />}
+              label="Query History"
+              active={activePanel === 'history'}
+              onClick={() => togglePanel('history')}
+            />
+            <NavItem
+              icon={<BookmarkCheck size={16} />}
+              label="Saved Presets"
+              active={activePanel === 'presets'}
+              onClick={() => togglePanel('presets')}
+            />
+          </nav>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px', width: '100%', alignItems: 'center' }}>
-          {[
-            { id: 'history' as Panel, icon: <History size={16} />, label: 'History' },
-            { id: 'presets' as Panel, icon: <BookmarkCheck size={16} />, label: 'Presets' },
-          ].map(item => (
+          <div style={{
+            padding: 'var(--space-3) 0',
+            borderTop: '1px solid var(--border)',
+            display: 'flex',
+            justifyContent: 'center',
+            width: '100%',
+          }}>
             <button
-              key={item.id}
-              title={item.label}
-              onClick={() => togglePanel(item.id)}
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
               style={{
                 width: '40px',
                 height: '40px',
                 borderRadius: 'var(--radius)',
                 border: 'none',
-                backgroundColor: activePanel === item.id ? 'var(--accent)' : 'transparent',
-                color: activePanel === item.id ? 'var(--accent-text)' : 'var(--text-muted)',
+                backgroundColor: 'transparent',
+                color: 'var(--text-secondary)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                flexShrink: 0,
               }}
               onMouseEnter={e => {
-                if (activePanel !== item.id) {
-                  e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
-                  e.currentTarget.style.color = 'var(--text-primary)'
-                }
+                e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
+                e.currentTarget.style.color = 'var(--text-primary)'
               }}
               onMouseLeave={e => {
-                if (activePanel !== item.id) {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                  e.currentTarget.style.color = 'var(--text-muted)'
-                }
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = 'var(--text-secondary)'
               }}
             >
-              {item.icon}
+              {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-          ))}
+          </div>
         </div>
 
-        <button
-          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          onClick={toggleTheme}
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: 'var(--radius)',
-            border: 'none',
-            backgroundColor: 'transparent',
-            color: 'var(--text-muted)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.15s ease',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
-            e.currentTarget.style.color = 'var(--text-primary)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = 'var(--text-muted)'
-          }}
-        >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
+        <AnimatedPresenceWrapper>
+          {activePanel && (
+            <AnimatedItem
+              variant="slideIn"
+              transition={smooth}
+              style={{
+                width: '260px',
+                borderRight: '1px solid var(--border)',
+                backgroundColor: 'var(--surface)',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                height: '100vh',
+              }}
+            >
+              <div
+                role="complementary"
+                aria-label={activePanel === 'history' ? 'Query history panel' : 'Saved presets panel'}
+                style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+              >
+                {activePanel === 'history' && <HistoryPanel />}
+                {activePanel === 'presets' && <PresetsPanel />}
+              </div>
+            </AnimatedItem>
+          )}
+        </AnimatedPresenceWrapper>
       </div>
-
-      {activePanel && (
-        <div
-          style={{
-            width: '260px',
-            borderRight: '1px solid var(--border)',
-            backgroundColor: 'var(--surface)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            animation: 'slideIn 0.15s ease',
-          }}
-        >
-          {activePanel === 'history' && <HistoryPanel />}
-          {activePanel === 'presets' && <PresetsPanel />}
-        </div>
-      )}
-    </div>
+    </>
   )
 }

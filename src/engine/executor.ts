@@ -70,7 +70,7 @@ const evaluateNode = (node: QueryNode, record: Record<string, unknown>): boolean
 }
 
 const evaluateGroup = (group: QueryGroup, record: Record<string, unknown>): boolean => {
-  if (group.children.length === 0) return true
+  if (group.children.length === 0) return false
   if (group.operator === 'AND') return group.children.every(child => evaluateNode(child, record))
   return group.children.some(child => evaluateNode(child, record))
 }

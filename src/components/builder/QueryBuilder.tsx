@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQueryStore } from '@/store'
 import QueryGroupComponent from './QueryGroup'
 import QueryPreview from '@/components/preview/QueryPreview'
@@ -8,14 +8,99 @@ import ResultsPanel from '@/components/simulator/ResultsPanel'
 import Toolbar from './Toolbar'
 import Sidebar from './Sidebar'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { useIsMobile } from '@/hooks/useIsMobile'
+
+type MobileTab = 'builder' | 'preview' | 'results'
+
+const MOBILE_TABS: { id: MobileTab; label: string }[] = [
+  { id: 'builder', label: 'Builder' },
+  { id: 'preview', label: 'Preview' },
+  { id: 'results', label: 'Results' },
+]
 
 export default function QueryBuilder() {
-  const { theme, tree } = useQueryStore()
+  const { theme, tree, pushHistory } = useQueryStore()
+  const isMobile = useIsMobile()
+  const [mobileTab, setMobileTab] = useState<MobileTab>('builder')
   useKeyboardShortcuts()
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
+
+  const prevTreeRef = useRef<string | null>(null)
+  useEffect(() => {
+    const serialized = JSON.stringify(tree)
+    if (prevTreeRef.current === null) {
+      prevTreeRef.current = serialized
+      return
+    }
+    if (prevTreeRef.current === serialized) return
+    prevTreeRef.current = serialized
+    const id = setTimeout(pushHistory, 1500)
+    return () => clearTimeout(id)
+  }, [tree, pushHistory])
+
+  const builderCanvas = (
+    <main
+      className="dot-grid"
+      role="tabpanel"
+      id="panel-builder"
+      aria-label="Query builder canvas"
+      style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: isMobile ? 'var(--space-4)' : 'var(--space-8)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--space-4)',
+        backgroundColor: 'var(--bg)',
+      }}
+    >
+      {!isMobile && (
+        <header style={{ marginBottom: 'var(--space-1)' }}>
+          <h1
+            style={{
+              fontSize: '18px',
+              fontWeight: 400,
+              color: 'var(--text-primary)',
+              letterSpacing: '0.04em',
+              fontFamily: 'var(--font-display)',
+              marginBottom: 'var(--space-1)',
+            }}
+          >
+            Query Builder
+          </h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+            Build complex filters visually — no code required
+          </p>
+        </header>
+      )}
+      <div style={{ animation: 'fadeIn 0.2s ease' }}>
+        <QueryGroupComponent group={tree.root} depth={0} isRoot />
+      </div>
+    </main>
+  )
+
+  const previewPanel = (
+    <div
+      role="tabpanel"
+      id="panel-preview"
+      style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+    >
+      <QueryPreview />
+    </div>
+  )
+
+  const resultsPanel = (
+    <div
+      role="tabpanel"
+      id="panel-results"
+      style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+    >
+      <ResultsPanel />
+    </div>
+  )
 
   return (
     <div
@@ -31,7 +116,7 @@ export default function QueryBuilder() {
     >
       <Sidebar />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <Toolbar />
 
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -66,24 +151,33 @@ export default function QueryBuilder() {
               </p>
             </div>
 
-            <QueryGroupComponent group={tree.root} depth={0} isRoot />
+            <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              {mobileTab === 'builder' && builderCanvas}
+              {mobileTab === 'preview' && previewPanel}
+              {mobileTab === 'results' && resultsPanel}
+            </div>
+          </>
+        ) : (
+          <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+            {builderCanvas}
+            <aside
+              aria-label="Query preview and results"
+              style={{
+                width: '460px',
+                borderLeft: '1px solid var(--border)',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                backgroundColor: 'var(--surface)',
+                flexShrink: 0,
+                boxShadow: 'var(--shadow-side)',
+              }}
+            >
+              <QueryPreview />
+              <ResultsPanel />
+            </aside>
           </div>
-
-          <div
-            style={{
-              width: '360px',
-              borderLeft: '1px solid var(--border)',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              backgroundColor: 'var(--surface)',
-              flexShrink: 0,
-            }}
-          >
-            <QueryPreview />
-            <ResultsPanel />
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )
