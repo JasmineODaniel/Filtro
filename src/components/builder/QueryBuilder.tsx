@@ -119,36 +119,43 @@ export default function QueryBuilder() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <Toolbar />
 
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          <div
-            style={{
-              flex: 1,
-              overflowY: 'auto',
-              paddingTop: 'var(--space-8)',
-              paddingRight: 'var(--space-8)',
-              paddingBottom: 'var(--space-8)',
-              paddingLeft: 'var(--space-xs)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '16px',
-              backgroundColor: 'var(--bg)',
-            }}
-          >
-            <div style={{ marginBottom: '8px' }}>
-              <h1
-                style={{
-                  fontSize: '18px',
-                  fontWeight: 600,
-                  color: 'var(--text-primary)',
-                  fontFamily: 'var(--font-sans)',
-                  marginBottom: '4px',
-                }}
-              >
-                Query Builder
-              </h1>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-                Build complex filters visually — no code required
-              </p>
+        {isMobile ? (
+          <>
+            <div
+              role="tablist"
+              aria-label="Section navigation"
+              style={{
+                display: 'flex',
+                borderBottom: '1px solid var(--border)',
+                backgroundColor: 'var(--surface)',
+                flexShrink: 0,
+              }}
+            >
+              {MOBILE_TABS.map(tab => (
+                <button
+                  type="button"
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={mobileTab === tab.id}
+                  aria-controls={`panel-${tab.id}`}
+                  onClick={() => setMobileTab(tab.id)}
+                  style={{
+                    flex: 1,
+                    padding: 'var(--space-3) var(--space-2)',
+                    border: 'none',
+                    borderBottom: `2px solid ${mobileTab === tab.id ? 'var(--accent)' : 'transparent'}`,
+                    backgroundColor: 'transparent',
+                    color: mobileTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
+                    fontSize: '12px',
+                    fontWeight: mobileTab === tab.id ? 600 : 400,
+                    fontFamily: 'var(--font-sans)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
