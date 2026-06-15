@@ -39,7 +39,10 @@ export default function QueryBuilder() {
             style={{
               flex: 1,
               overflowY: 'auto',
-              padding: '32px',
+              paddingTop: 'var(--space-8)',
+              paddingRight: 'var(--space-8)',
+              paddingBottom: 'var(--space-8)',
+              paddingLeft: 'var(--space-xs)',
               display: 'flex',
               flexDirection: 'column',
               gap: '16px',

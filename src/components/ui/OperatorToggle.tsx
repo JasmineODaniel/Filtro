@@ -25,13 +25,14 @@ export function OperatorToggle({ value, onToggle, borderColor }: OperatorToggleP
       style={{
         display: 'flex',
         flexShrink: 0,
-        borderRadius: 'var(--radius-pill)',
+        borderRadius: 'var(--radius)',
         overflow: 'hidden',
         border: `1px solid ${borderColor ?? 'var(--border)'}`,
       }}
     >
       {OPERATORS.map(op => (
         <button
+          type="button"
           key={op}
           onClick={() => value !== op && onToggle()}
           aria-label={`Set operator to ${op}`}
