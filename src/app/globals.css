@@ -45,11 +45,13 @@
   --radius-lg: 10px;
   --radius-xl: 14px;
   --radius-pill: 9999px;
+  --space-xs: 5px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 20px;
+  --space-8: 32px;
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
 }

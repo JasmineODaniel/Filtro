@@ -133,6 +133,7 @@ export default function QueryBuilder() {
             >
               {MOBILE_TABS.map(tab => (
                 <button
+                  type="button"
                   key={tab.id}
                   role="tab"
                   aria-selected={mobileTab === tab.id}
@@ -140,10 +141,10 @@ export default function QueryBuilder() {
                   onClick={() => setMobileTab(tab.id)}
                   style={{
                     flex: 1,
-                    height: '40px',
+                    padding: 'var(--space-3) var(--space-2)',
                     border: 'none',
-                    backgroundColor: 'transparent',
                     borderBottom: `2px solid ${mobileTab === tab.id ? 'var(--accent)' : 'transparent'}`,
+                    backgroundColor: 'transparent',
                     color: mobileTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
                     fontSize: '12px',
                     fontWeight: mobileTab === tab.id ? 600 : 400,
