@@ -22,6 +22,7 @@ export default function Toolbar() {
   const [savedToast, setSavedToast] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerPanel, setDrawerPanel] = useState<DrawerPanel>(null)
+  const [pdfLoading, setPdfLoading] = useState(false)
   const isMobile = useIsMobile()
 
   const closeDrawer = useCallback(() => {
@@ -33,17 +34,25 @@ export default function Toolbar() {
     fileInputRef.current?.click()
   }, [])
 
-  const handleExport = useCallback(() => {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const json = JSON.stringify(tree, null, 2)
-    const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `filtro-query-${timestamp}.json`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [tree])
+  const handleExportPDF = useCallback(async () => {
+    setPdfLoading(true)
+    try {
+      const [{ pdf }, { QueryPDF }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/ui/QueryPDF'),
+      ])
+      const exportedAt = new Date().toLocaleString()
+      const blob = await pdf(<QueryPDF tree={tree} schema={schema} exportedAt={exportedAt} />).toBlob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `filtro-query-${new Date().toISOString().replace(/[:.]/g, '-')}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setPdfLoading(false)
+    }
+  }, [tree, schema])
 
   const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -218,9 +227,10 @@ export default function Toolbar() {
           <Button
             variant="primary"
             size="md"
-            label="Export query as JSON"
-            title="Export query (Ctrl+E)"
-            onClick={handleExport}
+            label={pdfLoading ? 'Generating PDF…' : 'Export query as PDF'}
+            title="Export query as PDF"
+            onClick={() => { handleExportPDF() }}
+            disabled={pdfLoading}
             style={{ width: '32px', padding: 0 }}
             onMouseEnter={e => ghostHover(e, true)}
             onMouseLeave={e => ghostHover(e, false)}
