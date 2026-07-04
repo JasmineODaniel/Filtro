@@ -49,6 +49,8 @@ export default function Toolbar() {
       a.download = `filtro-query-${new Date().toISOString().replace(/[:.]/g, '-')}.pdf`
       a.click()
       URL.revokeObjectURL(url)
+    } catch {
+      alert('Failed to generate PDF. Please try again.')
     } finally {
       setPdfLoading(false)
     }
