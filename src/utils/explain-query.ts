@@ -20,15 +20,21 @@ function operatorPhrase(label: string, operator: Operator, value: unknown): stri
     case 'greater_than_or_equal': return `${label} is at least ${formatVal(value)}`
     case 'less_than_or_equal': return `${label} is at most ${formatVal(value)}`
     case 'between': {
-      const [a, b] = value as [unknown, unknown]
-      return `${label} is between ${formatVal(a)} and ${formatVal(b)}`
+      const arr = Array.isArray(value) ? value as [unknown, unknown] : ['', '']
+      return `${label} is between ${formatVal(arr[0])} and ${formatVal(arr[1])}`
     }
     case 'before': return `${label} is before ${formatVal(value)}`
     case 'after': return `${label} is after ${formatVal(value)}`
     case 'is_empty': return `${label} is empty`
     case 'is_not_empty': return `${label} is not empty`
-    case 'in_array': return `${label} is one of ${(value as unknown[]).map(formatVal).join(', ')}`
-    case 'not_in_array': return `${label} is none of ${(value as unknown[]).map(formatVal).join(', ')}`
+    case 'in_array': {
+      const arr = Array.isArray(value) ? value as unknown[] : []
+      return `${label} is one of ${arr.map(formatVal).join(', ')}`
+    }
+    case 'not_in_array': {
+      const arr = Array.isArray(value) ? value as unknown[] : []
+      return `${label} is none of ${arr.map(formatVal).join(', ')}`
+    }
     case 'regex': return `${label} matches the pattern ${formatVal(value)}`
     default: return `${label} matches ${formatVal(value)}`
   }

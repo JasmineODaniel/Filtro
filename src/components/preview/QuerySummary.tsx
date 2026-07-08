@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useMemo, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import { Copy, Check } from 'lucide-react'
 import { useQueryStore } from '@/store'
 import { explainQuery } from '@/utils/explain-query'
@@ -11,11 +11,15 @@ function QuerySummary() {
 
   const explanation = useMemo(() => explainQuery(tree.root, schema), [tree, schema])
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(explanation)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(explanation)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // clipboard unavailable or permission denied
+    }
+  }, [explanation])
 
   return (
     <div
