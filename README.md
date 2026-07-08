@@ -23,6 +23,9 @@ A visual query builder for constructing complex, nested filter conditions — wi
 - **Between validation** — reversed ranges (e.g. 35–20) are caught and flagged before execution
 - **Live preview** — SQL `WHERE`, MongoDB aggregation, and GraphQL `where` generated in real time
 - **Syntax highlighting** — keywords, values, and operators coloured via CSS design tokens
+- **Ask AI** — plain-English prompt builds a query via Groq (`llama-3.3-70b-versatile`); confidence score + explanation shown before applying
+- **Query Summary** — deterministic plain-English explanation of the current query tree, auto-updating, copyable
+- **PDF export** — download the current query as a formatted PDF with SQL, MongoDB, and GraphQL output
 - **Mock execution** — run queries against 50 users, 30 orders, 25 products; sortable paginated results
 - **Query history** — auto-snapshotted on change (deduped) and on execute; schema is saved with each entry
 - **Presets** — save named queries with schema context; loading a preset restores the correct schema automatically
@@ -41,6 +44,8 @@ A visual query builder for constructing complex, nested filter conditions — wi
 | State | Zustand 5 |
 | Animations | Framer Motion 12 |
 | Drag-and-drop | @dnd-kit/core + sortable |
+| AI | Groq SDK (`llama-3.3-70b-versatile`) |
+| PDF | @react-pdf/renderer |
 | Icons | Lucide React |
 | IDs | nanoid |
 | Tests | Vitest + Testing Library |
@@ -109,15 +114,17 @@ src/
 │   └── icon.tsx              dynamic favicon
 ├── components/
 │   ├── builder/
-│   │   ├── Toolbar.tsx       header: schema tabs, actions, mobile hamburger drawer
-│   │   ├── QueryBuilder.tsx  root mount, mobile tab layout
-│   │   ├── QueryGroup.tsx    recursive group renderer + DnD context
-│   │   ├── QueryRule.tsx     single rule row (field / operator / value)
-│   │   ├── Sidebar.tsx       desktop sidebar: history + presets + theme toggle
+│   │   ├── Toolbar.tsx            header: schema tabs, Ask AI button, actions, mobile drawer
+│   │   ├── QueryBuilder.tsx       root mount, mobile tab layout
+│   │   ├── QueryGroup.tsx         recursive group renderer + DnD context
+│   │   ├── QueryRule.tsx          single rule row (field / operator / value)
+│   │   ├── GenerateQueryModal.tsx Ask AI modal — prompt → Groq → query tree
+│   │   ├── Sidebar.tsx            desktop sidebar: history + presets + theme toggle
 │   │   ├── HistoryPanel.tsx
 │   │   └── PresetsPanel.tsx
 │   ├── preview/
-│   │   └── QueryPreview.tsx  syntax-highlighted preview, mode toggle (SQL/Mongo/GQL)
+│   │   ├── QueryPreview.tsx  syntax-highlighted preview, mode toggle (SQL/Mongo/GQL)
+│   │   └── QuerySummary.tsx  plain-English query explanation, copyable
 │   ├── simulator/
 │   │   └── ResultsPanel.tsx  execute, sort, paginate results table
 │   └── ui/
@@ -128,6 +135,7 @@ src/
 │       ├── Icon.tsx          lucide icon wrapper
 │       ├── FiltroLogo.tsx    FILTRO wordmark component
 │       ├── ConnectorLine.tsx AND/OR label between rules
+│       ├── QueryPDF.tsx      react-pdf document for PDF export
 │       └── Animated.tsx      AnimatedItem, AnimatedCollapse, StaggeredRow, OperatorToggle
 ├── engine/
 │   └── executor.ts           in-memory query evaluation
@@ -143,6 +151,7 @@ src/
 │   └── schema.ts             USERS_SCHEMA, ORDERS_SCHEMA, PRODUCTS_SCHEMA
 ├── utils/
 │   ├── query-generator.ts    SQL / MongoDB / GraphQL output
+│   ├── explain-query.ts      deterministic plain-English tree → sentence renderer
 │   ├── validator.ts          tree validation including reversed between ranges
 │   ├── operators.ts          operator label maps and type guards per field type
 │   ├── sanitize.ts           import validation + size guard (512 KB max)
@@ -159,8 +168,8 @@ CSS custom properties on `:root` (light) and `.dark` (dark). Key design tokens:
 |---|---|
 | `--bg` / `--surface` / `--bg-secondary` | layered backgrounds |
 | `--card-header-bg` / `--card-header-text` | card header — always dark bg, light text |
-| `--accent` / `--accent-text` | primary action color (lime `#c8ff00`) |
-| `--preview-bg` / `--preview-text` | code preview — always dark |
+| `--accent` / `--accent-text` | primary action color (lime `#c8ff00`) — used only on interactive elements |
+| `--preview-bg` / `--preview-text` | code preview — white in light mode, dark in dark mode |
 | `--syntax-keyword` / `--syntax-value` / `--syntax-operator` | syntax highlighting — mint in light, neon in dark |
 | `--table-header-bg` / `--table-header-text` | results table header |
 | `--border` / `--border-strong` | subtle / prominent dividers |
