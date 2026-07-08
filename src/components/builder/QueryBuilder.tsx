@@ -4,17 +4,19 @@ import { useEffect, useRef, useState } from 'react'
 import { useQueryStore } from '@/store'
 import QueryGroupComponent from './QueryGroup'
 import QueryPreview from '@/components/preview/QueryPreview'
+import QuerySummary from '@/components/preview/QuerySummary'
 import ResultsPanel from '@/components/simulator/ResultsPanel'
 import Toolbar from './Toolbar'
 import Sidebar from './Sidebar'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useIsMobile } from '@/hooks/useIsMobile'
 
-type MobileTab = 'builder' | 'preview' | 'results'
+type MobileTab = 'builder' | 'preview' | 'summary' | 'results'
 
 const MOBILE_TABS: { id: MobileTab; label: string }[] = [
   { id: 'builder', label: 'Builder' },
   { id: 'preview', label: 'Preview' },
+  { id: 'summary', label: 'Summary' },
   { id: 'results', label: 'Results' },
 ]
 
@@ -86,9 +88,19 @@ export default function QueryBuilder() {
     <div
       role="tabpanel"
       id="panel-preview"
-      style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+      style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}
     >
       <QueryPreview />
+    </div>
+  )
+
+  const summaryPanel = (
+    <div
+      role="tabpanel"
+      id="panel-summary"
+      style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}
+    >
+      <QuerySummary />
     </div>
   )
 
@@ -161,6 +173,7 @@ export default function QueryBuilder() {
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               {mobileTab === 'builder' && builderCanvas}
               {mobileTab === 'preview' && previewPanel}
+              {mobileTab === 'summary' && summaryPanel}
               {mobileTab === 'results' && resultsPanel}
             </div>
           </>
@@ -168,9 +181,9 @@ export default function QueryBuilder() {
           <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
             {builderCanvas}
             <aside
-              aria-label="Query preview and results"
+              aria-label="Query preview, summary, and results"
               style={{
-                width: '460px',
+                width: '540px',
                 borderLeft: '1px solid var(--border)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -181,6 +194,7 @@ export default function QueryBuilder() {
               }}
             >
               <QueryPreview />
+              <QuerySummary />
               <ResultsPanel />
             </aside>
           </div>
