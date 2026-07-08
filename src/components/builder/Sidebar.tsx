@@ -72,21 +72,28 @@ export default function Sidebar() {
     <>
       {activePanel && (
         <div
-          style={{ position: 'fixed', inset: 0, zIndex: 10 }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10,
+            backgroundColor: 'rgba(0,0,0,0.25)',
+            backdropFilter: 'blur(3px)',
+            WebkitBackdropFilter: 'blur(3px)',
+          }}
           onClick={() => setActivePanel(null)}
           aria-hidden="true"
         />
       )}
-      <div style={{ display: 'flex', flexShrink: 0, position: 'relative', zIndex: 20 }}>
+      <div style={{ flexShrink: 0, position: 'relative', zIndex: 20, width: '56px' }}>
         <div
           style={{
             width: '56px',
+            height: '100vh',
             borderRight: '1px solid var(--border)',
             backgroundColor: 'var(--surface)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            flexShrink: 0,
             boxShadow: 'var(--shadow)',
           }}
         >
@@ -163,13 +170,18 @@ export default function Sidebar() {
               variant="slideIn"
               transition={smooth}
               style={{
+                position: 'absolute',
+                left: '56px',
+                top: 0,
                 width: '260px',
+                height: '100vh',
                 borderRight: '1px solid var(--border)',
                 backgroundColor: 'var(--surface)',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
-                height: '100vh',
+                zIndex: 20,
+                boxShadow: 'var(--shadow-lg)',
               }}
             >
               <div

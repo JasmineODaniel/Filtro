@@ -89,7 +89,7 @@ function ResultsPanel() {
           <AnimatedPresenceWrapper>
             {hasRun && (
               <AnimatedItem variant="scaleIn" transition={smooth}>
-                <Badge variant={results.length > 0 ? 'accent' : 'muted'} pill>
+                <Badge variant={results.length > 0 ? 'depth' : 'muted'} pill>
                   {results.length}
                 </Badge>
               </AnimatedItem>

@@ -2,6 +2,8 @@ import { QueryGroup, QueryNode, QueryRule } from '@/types'
 import { needsNoValue } from '@/utils'
 
 const evaluateRule = (rule: QueryRule, record: Record<string, unknown>): boolean => {
+  if (!rule.field) return true
+
   const recordValue = record[rule.field]
 
   if (needsNoValue(rule.operator)) {
@@ -10,6 +12,8 @@ const evaluateRule = (rule: QueryRule, record: Record<string, unknown>): boolean
   }
 
   const value = rule.value
+
+  if (value === '' || value === null || value === undefined) return true
 
   switch (rule.operator) {
     case 'equals':
