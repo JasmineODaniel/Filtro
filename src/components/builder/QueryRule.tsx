@@ -9,11 +9,10 @@ import { CSS } from '@dnd-kit/utilities'
 import { Button } from '@/components/ui/Button'
 import { ChipSelect, ChipInput } from '@/components/ui/Chip'
 import { Icon, IconName } from '@/components/ui/Icon'
-import { AnimatedItem, AnimatedPresenceWrapper } from '@/components/ui/Animated'
+import { AnimatedItem } from '@/components/ui/Animated'
 import { useHover } from '@/hooks/useHover'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { smooth } from '@/hooks/useAnimation'
-import { motion } from 'framer-motion'
 
 interface Props {
   rule: QueryRuleType
@@ -160,7 +159,7 @@ function QueryRuleComponent({ rule }: Props) {
       return (
         <ChipSelect
           value={String(rule.value ?? '')}
-          onChange={e => updateRule(rule.id, { value: e.target.value === 'true' })}
+          onChange={e => updateRule(rule.id, { value: e.target.value === '' ? '' : e.target.value === 'true' })}
           aria-label="Select boolean value"
           error={!!error}
           aria-describedby={error ? errorId : undefined}
@@ -218,9 +217,7 @@ function QueryRuleComponent({ rule }: Props) {
   return (
     <AnimatedItem variant="slideDown" transition={smooth}>
       <div ref={setNodeRef} style={dragStyle} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-        <motion.div
-          layout
-          transition={smooth}
+        <div
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -301,31 +298,27 @@ function QueryRuleComponent({ rule }: Props) {
             {renderValueInput()}
           </div>
 
-          <AnimatedPresenceWrapper>
-            {hovered && (
-              <AnimatedItem variant="fadeIn" transition={smooth} style={{ marginLeft: 'auto', flexShrink: 0 }}>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  label="Delete rule"
-                  onClick={() => removeNode(rule.id)}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.color = 'var(--destructive)'
-                    e.currentTarget.style.backgroundColor = 'var(--destructive-bg)'
-                    e.currentTarget.style.borderColor = 'var(--destructive)'
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.color = 'var(--text-muted)'
-                    e.currentTarget.style.backgroundColor = 'transparent'
-                    e.currentTarget.style.borderColor = 'transparent'
-                  }}
-                >
-                  <Icon name="trash" size={12} />
-                </Button>
-              </AnimatedItem>
-            )}
-          </AnimatedPresenceWrapper>
-        </motion.div>
+          <div style={{ marginLeft: 'auto', flexShrink: 0, opacity: hovered ? 1 : 0, transition: 'opacity 0.15s ease', pointerEvents: hovered ? 'auto' : 'none' }}>
+            <Button
+              variant="danger"
+              size="sm"
+              label="Delete rule"
+              onClick={() => removeNode(rule.id)}
+              onMouseEnter={e => {
+                e.currentTarget.style.color = 'var(--destructive)'
+                e.currentTarget.style.backgroundColor = 'var(--destructive-bg)'
+                e.currentTarget.style.borderColor = 'var(--destructive)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.color = 'var(--text-muted)'
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.borderColor = 'transparent'
+              }}
+            >
+              <Icon name="trash" size={12} />
+            </Button>
+          </div>
+        </div>
 
         {error && (
           <AnimatedItem variant="fadeIn" transition={smooth}>

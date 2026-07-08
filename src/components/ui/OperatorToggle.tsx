@@ -11,7 +11,7 @@ interface OperatorToggleProps {
 const OPERATORS = ['AND', 'OR'] as const
 
 const segmentStyle: React.CSSProperties = {
-  padding: '2px var(--space-2)',
+  padding: '7px 13px',
   border: 'none',
   fontSize: '10px',
   fontWeight: 700,
