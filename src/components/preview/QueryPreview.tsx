@@ -113,7 +113,7 @@ function QueryPreview() {
           backgroundColor: 'var(--preview-bg)',
           overflowX: 'auto',
           overflowY: 'auto',
-          maxHeight: '260px',
+          height: '300px',
           margin: 0,
           whiteSpace: 'pre-wrap',
           wordBreak: 'break-word',

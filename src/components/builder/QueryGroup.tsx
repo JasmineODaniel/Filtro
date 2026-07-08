@@ -27,9 +27,6 @@ interface Props {
   isRoot?: boolean
 }
 
-const DEPTH_COLORS = ['#111111', '#3b82f6', '#a855f7', '#f97316']
-const DEPTH_COLORS_DARK = ['#c8ff00', '#3b82f6', '#a855f7', '#f97316']
-
 function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
   const {
     addRule,
@@ -39,12 +36,9 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
     toggleGroupCollapsed,
     reorderNodes,
     validationErrors,
-    theme,
   } = useQueryStore()
 
   const error = validationErrors.find(e => e.nodeId === group.id)
-  const depthColors = theme === 'dark' ? DEPTH_COLORS_DARK : DEPTH_COLORS
-  const depthColor = depthColors[depth % depthColors.length]
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -109,16 +103,6 @@ function QueryGroupComponent({ group, depth, isRoot = false }: Props) {
               : <ChevronDown size={11} />
             }
           </button>
-
-          <div
-            style={{
-              width: '3px',
-              height: '16px',
-              backgroundColor: depthColor,
-              borderRadius: '2px',
-              flexShrink: 0,
-            }}
-          />
 
           <OperatorToggle
             value={group.operator}

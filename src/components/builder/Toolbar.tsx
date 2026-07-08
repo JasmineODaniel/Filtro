@@ -221,10 +221,9 @@ export default function Toolbar() {
             label="Ask AI to build a query"
             title="Ask AI to build a query"
             onClick={() => setShowGenerateModal(true)}
-            style={isMobile ? { width: '32px', padding: 0 } : { paddingLeft: 'var(--space-3)', paddingRight: 'var(--space-3)', gap: 'var(--space-2)' }}
+            style={{ paddingLeft: 'var(--space-3)', paddingRight: 'var(--space-3)' }}
           >
-            <Icon name="wand2" size={15} />
-            {!isMobile && <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.01em' }}>Ask AI</span>}
+            <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.01em' }}>Ask AI</span>
           </Button>
 
           <Button
