@@ -24,6 +24,7 @@ import {
   Calendar,
   List,
   ToggleLeft,
+  Wand2,
   LucideProps,
 } from 'lucide-react'
 
@@ -51,6 +52,7 @@ export const Icons = {
   calendar: Calendar,
   list: List,
   toggle: ToggleLeft,
+  wand2: Wand2,
 } as const
 
 export type IconName = keyof typeof Icons
