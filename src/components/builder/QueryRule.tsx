@@ -231,7 +231,7 @@ function QueryRuleComponent({ rule }: Props) {
             borderRadius: 'var(--radius)',
             boxShadow: hovered ? 'var(--shadow-md)' : 'var(--shadow)',
             transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
-            flexWrap: isMobile ? 'nowrap' : 'wrap',
+            flexWrap: 'nowrap',
           }}
           role="group"
           aria-label="Query condition"

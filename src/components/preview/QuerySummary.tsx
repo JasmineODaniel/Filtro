@@ -81,6 +81,8 @@ function QuerySummary() {
           fontFamily: 'var(--font-sans)',
           margin: 0,
           fontStyle: 'italic',
+          maxHeight: '110px',
+          overflowY: 'auto',
         }}
       >
         {explanation}
