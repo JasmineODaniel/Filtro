@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { X, Wand2, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
+import { X, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import { useQueryStore } from '@/store'
 import { explainQuery } from '@/utils/explain-query'
 import type { QueryTree } from '@/types/query'
@@ -126,12 +126,9 @@ export function GenerateQueryModal({ onClose }: GenerateQueryModalProps) {
             flexShrink: 0,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Wand2 size={15} style={{ color: 'var(--accent)' }} />
-            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
-              Ask AI
-            </span>
-          </div>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)' }}>
+            Ask AI
+          </span>
           <button
             onClick={onClose}
             aria-label="Close generate query dialog"
@@ -333,7 +330,6 @@ export function GenerateQueryModal({ onClose }: GenerateQueryModalProps) {
                 gap: 'var(--space-2)',
               }}
             >
-              <Wand2 size={13} />
               Build Query
             </button>
           )}
