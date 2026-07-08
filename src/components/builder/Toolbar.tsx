@@ -11,6 +11,7 @@ import { Check, Menu, X, History, BookmarkCheck, Sun, Moon, ChevronRight } from 
 import { FiltroLogo } from '@/components/ui/FiltroLogo'
 import HistoryPanel from './HistoryPanel'
 import PresetsPanel from './PresetsPanel'
+import { GenerateQueryModal } from './GenerateQueryModal'
 
 type DrawerPanel = 'history' | 'presets' | null
 
@@ -23,6 +24,7 @@ export default function Toolbar() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [drawerPanel, setDrawerPanel] = useState<DrawerPanel>(null)
   const [pdfLoading, setPdfLoading] = useState(false)
+  const [showGenerateModal, setShowGenerateModal] = useState(false)
   const isMobile = useIsMobile()
 
   const closeDrawer = useCallback(() => {
@@ -213,6 +215,18 @@ export default function Toolbar() {
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Button
+            variant="accent"
+            size="md"
+            label="Ask AI to build a query"
+            title="Ask AI to build a query"
+            onClick={() => setShowGenerateModal(true)}
+            style={isMobile ? { width: '32px', padding: 0 } : { paddingLeft: 'var(--space-3)', paddingRight: 'var(--space-3)', gap: 'var(--space-2)' }}
+          >
+            <Icon name="wand2" size={15} />
+            {!isMobile && <span style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.01em' }}>Ask AI</span>}
+          </Button>
+
           <Button
             variant="primary"
             size="md"
@@ -582,6 +596,8 @@ export default function Toolbar() {
           Preset saved
         </div>
       )}
+
+      {showGenerateModal && <GenerateQueryModal onClose={() => setShowGenerateModal(false)} />}
     </>
   )
 }
