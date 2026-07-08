@@ -183,7 +183,7 @@ export default function QueryBuilder() {
             <aside
               aria-label="Query preview, summary, and results"
               style={{
-                width: '540px',
+                width: '600px',
                 borderLeft: '1px solid var(--border)',
                 display: 'flex',
                 flexDirection: 'column',
