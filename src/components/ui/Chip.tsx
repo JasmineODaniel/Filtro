@@ -118,7 +118,6 @@ export const ChipSelect = forwardRef<HTMLDivElement, ChipSelectProps>(
           onClick={openDropdown}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
-          aria-invalid={error ? 'true' : 'false'}
           aria-label={ariaLabel}
           aria-describedby={ariaDescribedBy}
           style={{

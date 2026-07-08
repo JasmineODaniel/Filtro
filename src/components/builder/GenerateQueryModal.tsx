@@ -156,7 +156,7 @@ export function GenerateQueryModal({ onClose }: GenerateQueryModalProps) {
 
         <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', margin: 0, lineHeight: 1.6 }}>
-            Tell me what {schema.name.toLowerCase()} you're looking for — in plain English.{' '}
+            Tell me what {schema.name.toLowerCase()} you&apos;re looking for — in plain English.{' '}
             <span style={{ color: 'var(--text-secondary)' }}>Ctrl+Enter to send.</span>
           </p>
 
